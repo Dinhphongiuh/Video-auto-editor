@@ -70,6 +70,7 @@ def cli(ctx, config: Optional[str], verbose: bool, quiet: bool):
 @click.option("--threads", "-t", type=int, help="Number of processing threads")
 @click.option("--gpu", is_flag=True, help="Use GPU acceleration")
 @click.option("--dry-run", is_flag=True, help="Preview operations without processing")
+@click.option("--format", "-f", help="Output format (mp4, avi, mov, mkv, webm, flv, wmv)")
 @click.pass_context
 def process(ctx, **kwargs):
     """
@@ -243,7 +244,8 @@ def _filter_options(options: dict) -> dict:
         'quality': 'quality',
         'threads': 'threads',
         'gpu': 'gpu',
-        'dry_run': 'dry_run'
+        'dry_run': 'dry_run',
+        'format': 'output_format'  # ADDED: Map format to output_format
     }
     
     for cli_key, processor_key in option_mapping.items():

@@ -65,11 +65,21 @@ videoforge serve --port 8080
 ### ✅ Video Processing Core
 - ✅ Resolution conversion
 - ✅ Aspect ratio changes
-- ✅ Speed adjustment
+- ✅ Speed adjustment (0.25x - 4.0x) 🆕
+- ✅ Format conversion (MP4, AVI, MOV, MKV, WEBM, FLV, WMV) 🆕
 - ✅ Color correction (brightness, contrast, saturation)
 - ✅ Quality presets (low, medium, high, ultra)
 - ✅ Batch processing
 - ✅ Multiple format support
+
+### ✅ Controller Interface 🆕
+- ✅ User-friendly menu system
+- ✅ Video format conversion with --format parameter
+- ✅ Speed adjustment with custom input (0.25x-4.0x)
+- ✅ Video compression with quality levels
+- ✅ Resolution changing with presets
+- ✅ Real-time progress tracking
+- ✅ Error handling and validation
 
 ### ✅ Configuration System
 - ✅ Profile-based processing
@@ -112,7 +122,10 @@ videoforge serve --port 8080
 
 ### ✅ Completed (Hiện tại)
 - **CLI Framework & Core Structure** - Hoàn thành 100%
-- **Basic Video Processing** - Hoàn thành 80%
+- **Basic Video Processing** - Hoàn thành 95% 🆕
+- **Format Conversion System** - Hoàn thành 100% 🆕
+- **Speed Adjustment Feature** - Hoàn thành 100% 🆕
+- **Controller Interface** - Hoàn thành 100% 🆕
 - **Configuration System** - Hoàn thành 90%
 - **Build Infrastructure** - Hoàn thành 100%
 
@@ -169,6 +182,18 @@ videoforge process \
   --profile instagram_reels \
   --brightness 10 \
   --saturation 15
+
+# 🆕 Chuyển đổi định dạng video
+videoforge process \
+  --input ./video.mkv \
+  --output ./video.mp4 \
+  --format mp4
+
+# 🆕 Thay đổi tốc độ video
+videoforge process \
+  --input ./video.mp4 \
+  --output ./video_fast.mp4 \
+  --speed 2.0
 ```
 
 ### Advanced Usage
@@ -261,6 +286,8 @@ VideoForge Core foundation đã được tạo thành công với:
 
 ```
 VideoForge/                             ✅ CREATED
+├── controller.py                        ✅ UPDATED - Enhanced Controller with Speed Feature
+├── KeHoach.txt                         ✅ UPDATED - Project structure and features
 ├── videoforge-core/                    ✅ CREATED - Core Engine (CLI)
 │   ├── setup.py                        ✅ CREATED - Package setup
 │   ├── requirements.txt                ✅ CREATED - Dependencies
@@ -270,10 +297,10 @@ VideoForge/                             ✅ CREATED
 │       ├── __init__.py                 ✅ CREATED - Package init
 │       ├── cli/                        ✅ CREATED - Command Line Interface
 │       │   ├── __init__.py             ✅ CREATED
-│       │   └── main.py                 ✅ CREATED - CLI entry point
+│       │   └── main.py                 ✅ UPDATED - Added --format option
 │       ├── core/                       ✅ CREATED - Core Processing Engine
 │       │   ├── __init__.py             ✅ CREATED
-│       │   ├── video_processor.py      ✅ CREATED - Main video processing
+│       │   ├── video_processor.py      ✅ UPDATED - Format conversion support
 │       │   └── batch_manager.py        ✅ CREATED - Batch processing
 │       ├── utils/                      ✅ CREATED - Utilities
 │       │   ├── __init__.py             ✅ CREATED

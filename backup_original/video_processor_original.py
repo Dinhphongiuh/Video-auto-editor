@@ -76,9 +76,6 @@ class ProcessingOptions:
     start_time: Optional[float] = None
     end_time: Optional[float] = None
     
-    # FORMAT CONVERSION - ADDED
-    output_format: Optional[str] = None  # "mp4", "avi", "mov", etc.
-    
     def __post_init__(self):
         """Validate options after initialization"""
         if self.speed < 0.1 or self.speed > 10.0:
@@ -104,17 +101,6 @@ class VideoProcessor:
         'medium': {'crf': 23, 'preset': 'medium'},
         'high': {'crf': 18, 'preset': 'slow'},
         'ultra': {'crf': 15, 'preset': 'veryslow'}
-    }
-    
-    # FORMAT MAPPING - ADDED
-    FORMAT_MAPPING = {
-        'mp4': {'container': 'mp4', 'video_codec': 'libx264', 'audio_codec': 'aac'},
-        'avi': {'container': 'avi', 'video_codec': 'libx264', 'audio_codec': 'mp3'},
-        'mov': {'container': 'mov', 'video_codec': 'libx264', 'audio_codec': 'aac'},
-        'mkv': {'container': 'matroska', 'video_codec': 'libx264', 'audio_codec': 'aac'},
-        'webm': {'container': 'webm', 'video_codec': 'libvpx-vp9', 'audio_codec': 'libopus'},
-        'flv': {'container': 'flv', 'video_codec': 'libx264', 'audio_codec': 'aac'},
-        'wmv': {'container': 'asf', 'video_codec': 'wmv2', 'audio_codec': 'wmav2'}
     }
     
     def __init__(self, config: Dict):
@@ -169,9 +155,6 @@ class VideoProcessor:
         # Parse options
         options = ProcessingOptions(**kwargs)
         
-        # FIX: Handle output path and format conversion
-        output_path = self._fix_output_path(input_path, output_path, options)
-        
         if options.dry_run:
             return self._dry_run_analysis(input_path, output_path, options)
         
@@ -214,38 +197,6 @@ class VideoProcessor:
                 processing_time=time.time() - start_time
             )
     
-    def _fix_output_path(self, input_path: Path, output_path: Path, options: ProcessingOptions) -> Path:
-        """
-        FIX: Handle output path and format conversion
-        """
-        # If output_path is a directory, create new filename
-        if output_path.is_dir() or not output_path.suffix:
-            # Get base name without extension
-            base_name = input_path.stem
-            
-            # Determine new extension
-            if options.output_format:
-                new_extension = f".{options.output_format}"
-            else:
-                # Keep original extension if no format specified
-                new_extension = input_path.suffix
-            
-            # Create new path
-            if output_path.is_dir():
-                output_path = output_path / f"{base_name}{new_extension}"
-            else:
-                # output_path has no extension, add extension
-                output_path = output_path.with_suffix(new_extension)
-        
-        # If format is specified, ensure extension matches
-        elif options.output_format:
-            expected_ext = f".{options.output_format}"
-            if output_path.suffix.lower() != expected_ext.lower():
-                # Change extension
-                output_path = output_path.with_suffix(expected_ext)
-        
-        return output_path
-    
     def _process_video_internal(self, input_path: Path, output_path: Path, options: ProcessingOptions) -> ProcessingResult:
         """Internal video processing logic"""
         
@@ -265,18 +216,6 @@ class VideoProcessor:
             
             # Step 4: Output configuration
             output_args = self._get_output_args(options, quality_settings)
-            
-            # FIX: Handle format conversion
-            if options.output_format:
-                format_config = self.FORMAT_MAPPING.get(options.output_format, {})
-                if format_config:
-                    # Apply codec and container for the format
-                    if 'video_codec' in format_config:
-                        output_args['vcodec'] = format_config['video_codec']
-                    if 'audio_codec' in format_config:
-                        output_args['acodec'] = format_config['audio_codec']
-                    if 'container' in format_config:
-                        output_args['f'] = format_config['container']
             
             # Step 5: Execute FFmpeg
             output = ffmpeg.output(

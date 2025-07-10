@@ -38,9 +38,10 @@ class VideoForgeController:
         print("2. 🗜️  Nén video")
         print("3. ⚠️  Cắt video (chưa hỗ trợ)")
         print("4. 📐 Thay đổi độ phân giải")
-        print("5. ⚙️  Thay đổi thư mục Input/Output")
-        print("6. 📊 Xem thông tin hệ thống")
-        print("7. 🔧 Khởi động dịch vụ API")
+        print("5. ⚡ Tăng/giảm tốc độ video")
+        print("6. ⚙️  Thay đổi thư mục Input/Output")
+        print("7. 📊 Xem thông tin hệ thống")
+        print("8. 🔧 Khởi động dịch vụ API")
         print("0. 🚪 Thoát")
         print("-" * 70)
     
@@ -132,15 +133,6 @@ class VideoForgeController:
             print(f"📝 Chi tiết lệnh: {cmd}")
             print("-" * 50)
             
-            # Thử chạy lệnh help trước để debug
-            if command_parts[0] == "process":
-                print("\n📚 Kiểm tra cú pháp lệnh process...")
-                help_cmd = [venv_python, "-m", "videoforge", "process", "--help"] if os.path.exists(venv_python) else ["videoforge", "process", "--help"]
-                help_result = subprocess.run(help_cmd, capture_output=True, text=True, encoding='utf-8')
-                if help_result.stdout:
-                    print("📖 Cú pháp lệnh:")
-                    print(help_result.stdout[:500] + "..." if len(help_result.stdout) > 500 else help_result.stdout)
-            
             result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
             
             print(f"\n📊 Mã trả về: {result.returncode}")
@@ -162,14 +154,6 @@ class VideoForgeController:
                 if result.stdout:
                     print("\n📤 Output (stdout):")
                     print(result.stdout)
-                    
-                # Thử phân tích lỗi cụ thể
-                if "Missing option" in (result.stderr or "") or "Missing option" in (result.stdout or ""):
-                    print("\n⚠️  Lỗi thiếu tham số. Hãy kiểm tra cú pháp lệnh.")
-                elif "not found" in (result.stderr or "").lower():
-                    print("\n⚠️  Không tìm thấy file hoặc lệnh.")
-                elif "permission" in (result.stderr or "").lower():
-                    print("\n⚠️  Lỗi quyền truy cập.")
                     
         except Exception as e:
             print(f"❌ Lỗi khi chạy lệnh: {e}")
@@ -225,16 +209,18 @@ class VideoForgeController:
                         error_count += 1
                         continue
                     
-                    # Chạy lệnh videoforge process với option --input và --output
                     try:
                         # Kiểm tra trạng thái trước khi chạy
                         file_size = os.path.getsize(video_file) / (1024 * 1024)  # MB
                         print(f"  📀 Kích thước file: {file_size:.2f} MB")
+                        print(f"  🔄 Chuyển đổi sang định dạng: {output_format.upper()}")
                         
+                        # FIXED: Thêm tham số --format để chỉ định định dạng đích
                         self.run_videoforge_command([
                             "process",
                             "-i", video_file,
-                            "-o", output_file
+                            "-o", output_file,
+                            "--format", output_format
                         ])
                         
                         # Kiểm tra kết quả
@@ -260,6 +246,111 @@ class VideoForgeController:
                 
         except ValueError:
             print("❌ Vui lòng nhập số!")
+        
+        input("Nhấn Enter để tiếp tục...")
+    
+    def speed_videos(self):
+        """Tăng/giảm tốc độ video"""
+        if not self.input_folder or not self.output_folder:
+            print("❌ Vui lòng thiết lập thư mục input và output trước!")
+            input("Nhấn Enter để tiếp tục...")
+            return
+        
+        video_files = self.get_video_files(self.input_folder)
+        if not video_files:
+            print("❌ Không tìm thấy file video nào!")
+            input("Nhấn Enter để tiếp tục...")
+            return
+        
+        print(f"\n⚡ TĂNG/GIẢM TỐC ĐỘ VIDEO")
+        print(f"Tìm thấy {len(video_files)} file video")
+        
+        # Cho phép user nhập tốc độ
+        print("\n🟢 Tốc độ gợi ý:")
+        print("0.25x - Chậm 4 lần")
+        print("0.5x  - Chậm 2 lần")
+        print("0.75x - Chậm 1.3 lần")
+        print("1.0x  - Tốc độ bình thường")
+        print("1.25x - Nhanh hơn 25%")
+        print("1.5x  - Nhanh 1.5 lần")
+        print("2.0x  - Nhanh 2 lần")
+        print("3.0x  - Nhanh 3 lần")
+        
+        try:
+            speed_input = input("\n🎯 Nhập tốc độ mong muốn (0.25-4.0): ").strip()
+            speed = float(speed_input)
+            
+            if speed < 0.25 or speed > 4.0:
+                print("❌ Tốc độ phải từ 0.25 đến 4.0!")
+                input("Nhấn Enter để tiếp tục...")
+                return
+            
+            # Hiển thị thông tin
+            if speed < 1.0:
+                speed_desc = f"chậm hơn {1/speed:.1f} lần"
+            elif speed > 1.0:
+                speed_desc = f"nhanh hơn {speed:.1f} lần"
+            else:
+                speed_desc = "tốc độ bình thường"
+            
+            print(f"\n🔄 Đang thay đổi tốc độ thành {speed}x ({speed_desc})...")
+            print(f"Số file cần xử lý: {len(video_files)}")
+            print("-" * 50)
+            
+            success_count = 0
+            error_count = 0
+            
+            for i, video_file in enumerate(video_files, 1):
+                filename = os.path.basename(video_file)
+                name, ext = os.path.splitext(filename)
+                output_file = os.path.join(self.output_folder, f"{name}_speed_{speed}x{ext}")
+                
+                print(f"\n[{i}/{len(video_files)}] 📁 Xử lý: {filename}")
+                print(f"  📍 Input : {video_file}")
+                print(f"  📤 Output: {output_file}")
+                
+                # Kiểm tra file input tồn tại
+                if not os.path.exists(video_file):
+                    print(f"  ❌ Lỗi: File input không tồn tại!")
+                    error_count += 1
+                    continue
+                
+                try:
+                    # Kiểm tra trạng thái trước khi chạy
+                    file_size = os.path.getsize(video_file) / (1024 * 1024)  # MB
+                    print(f"  📀 Kích thước file: {file_size:.2f} MB")
+                    print(f"  ⚡ Tốc độ: {speed}x ({speed_desc})")
+                    
+                    # Chạy lệnh videoforge process với tốc độ
+                    self.run_videoforge_command([
+                        "process",
+                        "-i", video_file,
+                        "-o", output_file,
+                        "--speed", str(speed)
+                    ])
+                    
+                    # Kiểm tra kết quả
+                    if os.path.exists(output_file):
+                        output_size = os.path.getsize(output_file) / (1024 * 1024)
+                        print(f"  ✅ Thành công! Kích thước output: {output_size:.2f} MB")
+                        success_count += 1
+                    else:
+                        print(f"  ❌ Lỗi: File output không được tạo!")
+                        error_count += 1
+                        
+                except Exception as e:
+                    print(f"  ❌ Lỗi: {e}")
+                    error_count += 1
+            
+            print("\n" + "=" * 50)
+            print(f"🏁 Kết quả thay đổi tốc độ:")
+            print(f"  ✅ Thành công: {success_count}/{len(video_files)}")
+            print(f"  ❌ Lỗi: {error_count}/{len(video_files)}")
+            print(f"  ⚡ Tốc độ áp dụng: {speed}x")
+            print("=" * 50)
+            
+        except ValueError:
+            print("❌ Vui lòng nhập số hợp lệ!")
         
         input("Nhấn Enter để tiếp tục...")
     
@@ -403,7 +494,7 @@ class VideoForgeController:
         """Hiển thị thông tin hệ thống"""
         print("\n📊 THÔNG TIN HỆ THỐNG")
         print("-" * 30)
-        self.run_videoforge_command(["info"])
+        self.run_videoforge_command(["info", "--system-info"])
         input("Nhấn Enter để tiếp tục...")
     
     def start_api_service(self):
@@ -436,13 +527,15 @@ class VideoForgeController:
                 elif choice == "4":
                     self.resize_videos()
                 elif choice == "5":
-                    self.set_folders()
+                    self.speed_videos()
                 elif choice == "6":
-                    self.show_system_info()
+                    self.set_folders()
                 elif choice == "7":
+                    self.show_system_info()
+                elif choice == "8":
                     self.start_api_service()
                 else:
-                    print("❌ Lựa chọn không hợp lệ! Vui lòng chọn từ 0-7.")
+                    print("❌ Lựa chọn không hợp lệ! Vui lòng chọn từ 0-8.")
                     input("Nhấn Enter để tiếp tục...")
                     
             except KeyboardInterrupt:
