@@ -1,0 +1,3 @@
+[console_scripts]
+vf = videoforge.cli.main:main
+videoforge = videoforge.cli.main:main
