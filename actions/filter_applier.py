@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Video Filter Applier Action
+Video Filter Applier Action - Sử dụng FFmpeg trực tiếp
 Xử lý áp dụng bộ lọc video
 """
 
 import os
 import json
+import subprocess
 from .base_action import BaseAction
 
 
 class VideoFilterApplier(BaseAction):
-    """Xử lý áp dụng bộ lọc video"""
+    """Xử lý áp dụng bộ lọc video bằng FFmpeg trực tiếp"""
     
     def __init__(self):
         super().__init__()
@@ -36,50 +37,44 @@ class VideoFilterApplier(BaseAction):
                 "vintage": {
                     "name": "Vintage",
                     "description": "Hiệu ứng cổ điển",
-                    "brightness": -10,
-                    "contrast": 15,
-                    "saturation": -20,
-                    "sepia": True
+                    "brightness": -0.1,
+                    "contrast": 1.15,
+                    "saturation": 0.8
                 },
                 "cinematic": {
                     "name": "Cinematic",
                     "description": "Hiệu ứng điện ảnh",
-                    "brightness": 5,
-                    "contrast": 25,
-                    "saturation": 10,
-                    "vignette": True
+                    "brightness": 0.05,
+                    "contrast": 1.25,
+                    "saturation": 1.1
                 },
                 "vibrant": {
                     "name": "Vibrant",
                     "description": "Màu sắc sống động",
-                    "brightness": 10,
-                    "contrast": 20,
-                    "saturation": 30,
-                    "sharpness": 15
+                    "brightness": 0.1,
+                    "contrast": 1.2,
+                    "saturation": 1.3
                 },
                 "black_white": {
                     "name": "Black & White",
                     "description": "Đen trắng",
-                    "brightness": 0,
-                    "contrast": 20,
-                    "saturation": -100,
-                    "sharpness": 10
+                    "brightness": 0.0,
+                    "contrast": 1.2,
+                    "saturation": 0.0
                 },
                 "warm": {
                     "name": "Warm",
                     "description": "Tông màu ấm",
-                    "brightness": 5,
-                    "contrast": 10,
-                    "saturation": 15,
-                    "temperature": 200
+                    "brightness": 0.05,
+                    "contrast": 1.1,
+                    "saturation": 1.15
                 },
                 "cool": {
                     "name": "Cool",
                     "description": "Tông màu lạnh",
-                    "brightness": 0,
-                    "contrast": 15,
-                    "saturation": 10,
-                    "temperature": -200
+                    "brightness": 0.0,
+                    "contrast": 1.15,
+                    "saturation": 1.1
                 }
             }
         }
@@ -99,6 +94,12 @@ class VideoFilterApplier(BaseAction):
         
         print(f"\n🎨 ÁP DỤNG BỘ LỌC VIDEO")
         print(f"Tìm thấy {len(video_files)} file video")
+        
+        # Kiểm tra FFmpeg
+        if not self._check_ffmpeg():
+            print("❌ FFmpeg không khả dụng! Vui lòng cài đặt FFmpeg.")
+            input("Nhấn Enter để tiếp tục...")
+            return
         
         # Chọn bộ lọc
         filter_config = self._select_filter()
@@ -135,31 +136,13 @@ class VideoFilterApplier(BaseAction):
                 print(f"  📀 Kích thước file: {file_size:.2f} MB")
                 print(f"  🎨 Bộ lọc: {filter_name}")
                 
-                # Tạo command với filter parameters
-                cmd = [
-                    "process",
-                    "-i", video_file,
-                    "-o", output_file
-                ]
-                
-                # Thêm các tham số filter
-                if 'brightness' in filter_config:
-                    cmd.extend(["--brightness", str(filter_config['brightness'])])
-                if 'contrast' in filter_config:
-                    cmd.extend(["--contrast", str(filter_config['contrast'])])
-                if 'saturation' in filter_config:
-                    cmd.extend(["--saturation", str(filter_config['saturation'])])
-                
-                # Chạy lệnh áp dụng bộ lọc
-                self.run_videoforge_command(cmd)
-                
-                # Kiểm tra kết quả
-                if os.path.exists(output_file):
+                # Áp dụng filter bằng FFmpeg trực tiếp
+                if self._apply_ffmpeg_filter(video_file, output_file, filter_config):
                     output_size = os.path.getsize(output_file) / (1024 * 1024)
                     print(f"  ✅ Thành công! Kích thước output: {output_size:.2f} MB")
                     success_count += 1
                 else:
-                    print(f"  ❌ Lỗi: File output không được tạo!")
+                    print(f"  ❌ Lỗi: Không thể áp dụng filter!")
                     error_count += 1
                     
             except Exception as e:
@@ -169,6 +152,68 @@ class VideoFilterApplier(BaseAction):
         # Hiển thị kết quả
         self._show_results(success_count, error_count, len(video_files), filter_name)
         input("Nhấn Enter để tiếp tục...")
+    
+    def _check_ffmpeg(self):
+        """Kiểm tra FFmpeg có khả dụng không"""
+        try:
+            result = subprocess.run(['ffmpeg', '-version'], 
+                                  capture_output=True, text=True)
+            return result.returncode == 0
+        except:
+            return False
+    
+    def _apply_ffmpeg_filter(self, input_file, output_file, filter_config):
+        """Áp dụng filter bằng FFmpeg trực tiếp"""
+        try:
+            # Tạo filter string cho FFmpeg
+            filter_parts = []
+            
+            # Brightness
+            if 'brightness' in filter_config:
+                brightness = filter_config['brightness']
+                filter_parts.append(f"brightness={brightness}")
+            
+            # Contrast  
+            if 'contrast' in filter_config:
+                contrast = filter_config['contrast']
+                filter_parts.append(f"contrast={contrast}")
+            
+            # Saturation
+            if 'saturation' in filter_config:
+                saturation = filter_config['saturation']
+                filter_parts.append(f"saturation={saturation}")
+            
+            if not filter_parts:
+                # Không có filter nào, chỉ copy file
+                filter_string = "copy"
+            else:
+                # Tạo eq filter
+                filter_string = f"eq={':'.join(filter_parts)}"
+            
+            # Tạo FFmpeg command
+            cmd = [
+                'ffmpeg',
+                '-i', input_file,
+                '-vf', filter_string,
+                '-c:a', 'copy',  # Copy audio stream
+                '-y',  # Overwrite output
+                output_file
+            ]
+            
+            print(f"  🔧 FFmpeg Command: {' '.join(cmd)}")
+            
+            # Chạy FFmpeg
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                return True
+            else:
+                print(f"  ❌ FFmpeg Error: {result.stderr}")
+                return False
+                
+        except Exception as e:
+            print(f"  ❌ Lỗi khi chạy FFmpeg: {e}")
+            return False
     
     def _select_filter(self):
         """Cho phép user chọn bộ lọc"""
@@ -203,24 +248,39 @@ class VideoFilterApplier(BaseAction):
         """Tạo bộ lọc tùy chỉnh"""
         print("\n🎨 TẠO BỘ LỌC TÙY CHỈNH")
         print("Nhập giá trị cho các tham số (để trống để bỏ qua):")
+        print("Brightness: -1.0 đến 1.0 (0 = không thay đổi)")
+        print("Contrast: 0.0 đến 3.0 (1 = không thay đổi)")
+        print("Saturation: 0.0 đến 3.0 (1 = không thay đổi)")
         
         filter_config = {"name": "Custom"}
         
         try:
             # Brightness
-            brightness = input("Độ sáng (-100 đến 100): ").strip()
+            brightness = input("Độ sáng (-1.0 đến 1.0): ").strip()
             if brightness:
-                filter_config['brightness'] = int(brightness)
+                brightness_val = float(brightness)
+                if -1.0 <= brightness_val <= 1.0:
+                    filter_config['brightness'] = brightness_val
+                else:
+                    print("⚠️ Brightness ngoài phạm vi, sử dụng 0")
             
             # Contrast
-            contrast = input("Độ t대비 (-100 đến 100): ").strip()
+            contrast = input("Độ tương phản (0.0 đến 3.0): ").strip()
             if contrast:
-                filter_config['contrast'] = int(contrast)
+                contrast_val = float(contrast)
+                if 0.0 <= contrast_val <= 3.0:
+                    filter_config['contrast'] = contrast_val
+                else:
+                    print("⚠️ Contrast ngoài phạm vi, sử dụng 1.0")
             
             # Saturation
-            saturation = input("Độ bão hòa (-100 đến 100): ").strip()
+            saturation = input("Độ bão hòa (0.0 đến 3.0): ").strip()
             if saturation:
-                filter_config['saturation'] = int(saturation)
+                saturation_val = float(saturation)
+                if 0.0 <= saturation_val <= 3.0:
+                    filter_config['saturation'] = saturation_val
+                else:
+                    print("⚠️ Saturation ngoài phạm vi, sử dụng 1.0")
             
             return filter_config
             
@@ -235,4 +295,6 @@ class VideoFilterApplier(BaseAction):
         print(f"  ✅ Thành công: {success_count}/{total_count}")
         print(f"  ❌ Lỗi: {error_count}/{total_count}")
         print(f"  🎨 Bộ lọc: {filter_name}")
+        if success_count > 0:
+            print(f"  📁 Vị trí output: Đã lưu với tên *_filtered_{filter_name.lower()}*")
         print("=" * 50)

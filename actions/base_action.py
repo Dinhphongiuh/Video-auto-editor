@@ -55,13 +55,31 @@ class BaseAction:
             if os.path.exists(venv_python):
                 cmd = [venv_python, "-m", "videoforge"] + command_parts
             else:
-                cmd = ["videoforge"] + command_parts
+                cmd = ["python", "-m", "videoforge"] + command_parts
             
             print(f"\n🚀 Đang chạy: {' '.join(cmd)}")
             print(f"📝 Chi tiết lệnh: {cmd}")
             print("-" * 50)
             
+            # THÊM: Thiết lập working directory
+            import os
+            original_cwd = os.getcwd()
+            try:
+                # Chuyển đến thư mục videoforge-core
+                videoforge_dir = os.path.join("D:", "VideoForge", "videoforge-core")
+                if os.path.exists(videoforge_dir):
+                    os.chdir(videoforge_dir)
+                    print(f"📁 Working directory: {videoforge_dir}")
+            except:
+                pass
+            
             result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
+            
+            # Khôi phục working directory
+            try:
+                os.chdir(original_cwd)
+            except:
+                pass
             
             print(f"\n📊 Mã trả về: {result.returncode}")
             

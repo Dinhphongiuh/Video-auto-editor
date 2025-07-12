@@ -317,7 +317,27 @@ class VideoProcessor:
         
         return video_stream
     
-    def _apply_color_filters(self, video_stream, options: ProcessingOptions):
+   def _apply_color_filters(self, video_stream, options: ProcessingOptions):
+    """Apply color correction filters"""
+    
+    # Build eq filter parameters correctly
+    eq_params = []
+    
+    if options.brightness != 0:
+        eq_params.append(f"brightness={options.brightness/100.0}")
+    
+    if options.contrast != 0:
+        eq_params.append(f"contrast={1 + (options.contrast/100.0)}")
+    
+    if options.saturation != 0:
+        eq_params.append(f"saturation={1 + (options.saturation/100.0)}")
+    
+    if eq_params:
+        # Join with colon for eq filter
+        eq_filter_str = ':'.join(eq_params)
+        video_stream = ffmpeg.filter(video_stream, 'eq', eq_filter_str)
+    
+    return video_stream
         """Apply color correction filters"""
         
         # Build eq filter parameters
