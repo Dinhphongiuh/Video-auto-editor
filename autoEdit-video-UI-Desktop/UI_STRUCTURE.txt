@@ -1,0 +1,388 @@
+## 🎨 AutoEdit Video UI Desktop - Python Project Structure
+
+### 📁 ARCHITECTURE OVERVIEW (Python Desktop App)
+```
+autoEdit-video-UI-Desktop/
+├── src/                                    # Source code chính
+│   ├── ui/                                 # UI Layer (PyQt6/Tkinter)
+│   │   ├── windows/                        # Main windows
+│   │   │   ├── main_window.py              # Cửa sổ chính
+│   │   │   ├── preview_window.py           # Cửa sổ preview video
+│   │   │   ├── settings_window.py          # Cửa sổ cài đặt
+│   │   │   └── about_window.py             # Cửa sổ thông tin
+│   │   │
+│   │   ├── widgets/                        # Custom widgets
+│   │   │   ├── video_player_widget.py      # Widget phát video
+│   │   │   ├── progress_widget.py          # Widget hiển thị tiến trình
+│   │   │   ├── file_list_widget.py         # Widget danh sách file
+│   │   │   ├── filter_panel_widget.py      # Widget bộ lọc
+│   │   │   ├── export_panel_widget.py      # Widget xuất video
+│   │   │   └── toolbar_widget.py           # Widget thanh công cụ
+│   │   │
+│   │   ├── dialogs/                        # Dialog boxes
+│   │   │   ├── file_dialog.py              # Dialog chọn file
+│   │   │   ├── export_dialog.py            # Dialog xuất file
+│   │   │   ├── filter_dialog.py            # Dialog chỉnh filter
+│   │   │   ├── progress_dialog.py          # Dialog tiến trình
+│   │   │   └── error_dialog.py             # Dialog lỗi
+│   │   │
+│   │   ├── components/                     # UI components nhỏ
+│   │   │   ├── buttons.py                  # Custom buttons
+│   │   │   ├── sliders.py                  # Custom sliders
+│   │   │   ├── labels.py                   # Custom labels
+│   │   │   ├── inputs.py                   # Custom input fields
+│   │   │   └── layouts.py                  # Custom layouts
+│   │   │
+│   │   └── ui_manager.py                   # UI Manager chính
+│   │
+│   ├── core/                               # Core Logic Layer
+│   │   ├── app.py                          # Application main class
+│   │   ├── event_manager.py                # Event handling system
+│   │   ├── state_manager.py                # State management
+│   │   ├── signal_manager.py               # Signal/slot management
+│   │   └── plugin_manager.py               # Plugin system
+│   │
+│   ├── services/                           # Business Logic Layer
+│   │   ├── video_service.py                # Video processing service
+│   │   ├── file_service.py                 # File management service
+│   │   ├── export_service.py               # Export functionality
+│   │   ├── filter_service.py               # Filter processing
+│   │   ├── settings_service.py             # Settings management
+│   │   └── api_service.py                  # VideoForge API integration
+│   │
+│   ├── controllers/                        # Controller Layer (MVC)
+│   │   ├── main_controller.py              # Main window controller
+│   │   ├── video_controller.py             # Video processing controller
+│   │   ├── file_controller.py              # File management controller
+│   │   ├── export_controller.py            # Export controller
+│   │   └── settings_controller.py          # Settings controller
+│   │
+│   ├── models/                             # Data Models
+│   │   ├── video_model.py                  # Video data model
+│   │   ├── project_model.py                # Project data model
+│   │   ├── settings_model.py               # Settings data model
+│   │   ├── filter_model.py                 # Filter data model
+│   │   └── export_model.py                 # Export settings model
+│   │
+│   └── utils/                              # Utility Functions
+│       ├── constants.py                    # App constants
+│       ├── helpers.py                      # Helper functions
+│       ├── validators.py                   # Input validation
+│       ├── formatters.py                   # Data formatting
+│       ├── file_utils.py                   # File utilities
+│       └── video_utils.py                  # Video utilities
+│
+├── resources/                              # Static Resources
+│   ├── icons/                              # Icon files
+│   │   ├── app_icon.ico                    # Main app icon
+│   │   ├── play.png                        # Play button icon
+│   │   ├── pause.png                       # Pause button icon
+│   │   ├── stop.png                        # Stop button icon
+│   │   └── export.png                      # Export icon
+│   │
+│   ├── images/                             # Image files
+│   │   ├── logo.png                        # App logo
+│   │   ├── splash.png                      # Splash screen
+│   │   └── backgrounds/                    # Background images
+│   │
+│   └── styles/                             # Styling files
+│       ├── main.qss                        # Main stylesheet (PyQt)
+│       ├── dark_theme.qss                  # Dark theme
+│       ├── light_theme.qss                 # Light theme
+│       └── components.qss                  # Component styles
+│
+├── config/                                 # Configuration
+│   ├── settings.ini                        # App settings
+│   ├── themes.json                         # Theme configurations
+│   ├── shortcuts.json                      # Keyboard shortcuts
+│   └── filters.json                        # Filter presets
+│
+├── tests/                                  # Testing
+│   ├── test_ui/                            # UI tests
+│   ├── test_services/                      # Service tests
+│   ├── test_models/                        # Model tests
+│   └── test_utils/                         # Utility tests
+│
+├── docs/                                   # Documentation
+│   ├── UI_DESIGN.md                        # UI design specs
+│   ├── API.md                              # API documentation
+│   ├── FEATURES.md                         # Feature specifications
+│   └── DEVELOPMENT.md                      # Development guide
+│
+├── main.py                                 # Entry point
+├── requirements.txt                        # Python dependencies
+├── setup.py                               # Setup script
+├── pyproject.toml                         # Modern Python project config
+└── README.md                              # Project documentation
+```
+
+## 🎯 DESIGN PRINCIPLES
+
+### 1. MVC Architecture Pattern
+- **Model**: Data handling và business logic (models/, services/)
+- **View**: UI components (ui/)
+- **Controller**: Logic điều khiển giữa Model và View (controllers/)
+
+### 2. Separation of Concerns
+- **UI Layer**: Chỉ xử lý hiển thị và user interaction
+- **Business Logic**: Tách biệt trong services/
+- **Data Models**: Pure data classes, không chứa business logic
+- **Controllers**: Orchestrate giữa UI và services
+
+### 3. Modular Components
+- **Small Classes**: Mỗi class có trách nhiệm rõ ràng, tối đa 200 lines
+- **Single Responsibility**: Mỗi module chỉ làm một việc
+- **Loose Coupling**: Components độc lập, dễ test và maintain
+
+### 4. Event-Driven Architecture
+- **Signal/Slot System**: PyQt signals cho communication
+- **Event Manager**: Centralized event handling
+- **Observer Pattern**: Cho real-time updates
+
+## 🚀 TECHNOLOGY STACK
+
+### GUI Framework Options
+**Option 1: PyQt6 (Recommended)**
+- Modern, professional UI
+- Rich widgets và customization
+- Cross-platform compatibility
+- Excellent performance
+
+**Option 2: Tkinter + ttkbootstrap**
+- Built-in with Python
+- Lightweight
+- Modern themes với ttkbootstrap
+
+**Option 3: PySide6**
+- Official Qt binding
+- Similar to PyQt6
+- LGPL license
+
+### Core Dependencies
+```
+PyQt6>=6.4.0                   # GUI framework
+opencv-python>=4.7.0           # Video processing
+pillow>=9.4.0                  # Image handling
+requests>=2.28.0               # API communication
+configparser>=5.3.0            # Settings management
+psutil>=5.9.0                  # System info
+```
+
+## 📱 UI COMPONENTS STRUCTURE
+
+### Main Window Layout
+```
+┌─────────────────────────────────────────────────────────┐
+│ MenuBar + ToolBar                                       │
+├─────────────────┬───────────────────────────────────────┤
+│                 │                                       │
+│   File List     │        Video Preview Area             │
+│   Widget        │                                       │
+│                 │                                       │
+├─────────────────┼───────────────────────────────────────┤
+│                 │                                       │
+│ Filter Panel    │       Progress / Controls             │
+│ Widget          │                                       │
+│                 │                                       │
+└─────────────────┴───────────────────────────────────────┘
+```
+
+### Widget Hierarchy
+- **MainWindow**
+  - **ToolbarWidget**
+  - **FileListWidget**
+  - **VideoPlayerWidget**
+  - **FilterPanelWidget**
+  - **ProgressWidget**
+  - **ExportPanelWidget**
+
+### Dialog System
+- **Modal Dialogs**: Settings, Export, Filters
+- **Progress Dialogs**: Processing feedback
+- **Error Dialogs**: User-friendly error messages
+
+## 🔧 CORE FEATURES TO IMPLEMENT
+
+### Phase 1: Basic UI Structure (1 week)
+1. **Main Window Setup**
+   - Window layout và basic widgets
+   - Menu bar và toolbar
+   - Status bar
+
+2. **File Management UI**
+   - File list widget với drag & drop
+   - File info display
+   - Thumbnail generation
+
+3. **Video Player**
+   - Basic video preview
+   - Play/pause controls
+   - Seek bar
+
+### Phase 2: Processing UI (1-2 weeks)
+1. **Filter Panel**
+   - Filter selection
+   - Real-time preview
+   - Custom settings
+
+2. **Export Panel**
+   - Format selection
+   - Quality settings
+   - Output configuration
+
+3. **Progress Tracking**
+   - Real-time progress display
+   - Cancel functionality
+   - Batch processing status
+
+### Phase 3: Advanced Features (2-3 weeks)
+1. **Settings System**
+   - App configuration
+   - Theme selection
+   - Keyboard shortcuts
+
+2. **Advanced UI**
+   - Timeline editor cho trimming
+   - Before/after comparison
+   - Batch operations
+
+## 🎨 STYLING APPROACH
+
+### Theme System
+- **Light Theme**: Professional, clean
+- **Dark Theme**: Modern, eye-friendly
+- **Custom Themes**: User configurable
+
+### QSS Styling (PyQt)
+```css
+/* Main window style */
+QMainWindow {
+    background-color: #f5f5f5;
+    color: #333333;
+}
+
+/* Custom buttons */
+QPushButton {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 16px;
+    background-color: #ffffff;
+}
+```
+
+## 📊 STATE MANAGEMENT
+
+### Application State
+- **Video List**: Current loaded videos
+- **Current Video**: Selected video for processing
+- **UI State**: Window positions, selected tabs
+- **Settings**: User preferences
+- **Processing State**: Active operations
+
+### State Persistence
+- **Settings**: INI files
+- **Project State**: JSON files
+- **Recent Files**: Registry/config
+
+## 🔌 VIDEOFORGE INTEGRATION
+
+### API Communication
+```python
+# Integration với VideoForge backend
+class VideoForgeAPI:
+    def __init__(self):
+        self.base_url = "http://localhost:8000"
+    
+    def process_video(self, video_path, action, settings):
+        # Call VideoForge actions
+        pass
+```
+
+### Feature Mapping
+- **Format Conversion** → UI dropdown selection
+- **Video Compression** → Quality slider
+- **Speed Adjustment** → Speed input widget
+- **Resolution Change** → Resolution dropdown
+- **Video Filters** → Filter panel với preview
+- **Video Trimming** → Timeline widget
+
+## 📋 DEVELOPMENT WORKFLOW
+
+### Setup Phase
+1. Create virtual environment
+2. Install dependencies
+3. Setup project structure
+4. Initialize main window
+
+### Component Development
+1. Start với basic widgets
+2. Implement main window layout
+3. Add video player functionality
+4. Build processing panels
+
+### Integration Phase
+1. Connect UI với services
+2. Implement state management
+3. Add VideoForge integration
+4. Testing và debugging
+
+## 🎪 PERFORMANCE CONSIDERATIONS
+
+### UI Performance
+- **Lazy Loading**: Load widgets khi cần
+- **Thread Management**: UI thread riêng biệt với processing
+- **Memory Management**: Cleanup khi đóng windows
+- **Responsive UI**: Non-blocking operations
+
+### Video Handling
+- **Thumbnail Caching**: Cache thumbnails
+- **Progressive Loading**: Load video info từ từ
+- **Memory Optimization**: Release video resources
+
+## 🧪 TESTING STRATEGY
+
+### Unit Tests
+- Model classes
+- Service functions
+- Utility functions
+
+### Integration Tests
+- UI component interactions
+- API communication
+- File operations
+
+### UI Tests
+- User workflow testing
+- Error handling
+- Performance testing
+
+---
+
+## 🎬 INTEGRATION POINTS
+
+### VideoForge Backend
+- **REST API**: Communication với existing actions
+- **WebSocket**: Real-time progress updates
+- **File System**: Shared file access
+
+### External Tools
+- **FFmpeg**: Video processing
+- **OpenCV**: Video analysis
+- **Pillow**: Image processing
+
+---
+
+**AutoEdit Video UI Desktop** - Professional Python Desktop Application 🎨✨
+*"Clean Architecture, Separated Logic, Maintainable Code"*
+
+### 🎯 KEY BENEFITS
+- **Modular Design**: Easy to extend và maintain
+- **Professional UI**: Modern desktop experience
+- **Clean Code**: Well-separated concerns
+- **Testable**: Comprehensive testing strategy
+- **Scalable**: Ready for future features
+
+### 🔄 DEVELOPMENT STATUS
+**Current Phase**: Project Structure Setup ✅
+**Next Phase**: Basic UI Implementation 🚧
+**Target**: Full-featured desktop video editor 🎯
