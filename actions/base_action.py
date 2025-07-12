@@ -61,8 +61,7 @@ class BaseAction:
             print(f"📝 Chi tiết lệnh: {cmd}")
             print("-" * 50)
             
-            # THÊM: Thiết lập working directory
-            import os
+            # Thiết lập working directory
             original_cwd = os.getcwd()
             try:
                 # Chuyển đến thư mục videoforge-core
@@ -70,16 +69,16 @@ class BaseAction:
                 if os.path.exists(videoforge_dir):
                     os.chdir(videoforge_dir)
                     print(f"📁 Working directory: {videoforge_dir}")
-            except:
-                pass
+            except Exception as e:
+                print(f"⚠️ Không thể chuyển working directory: {e}")
             
             result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8')
             
             # Khôi phục working directory
             try:
                 os.chdir(original_cwd)
-            except:
-                pass
+            except Exception as e:
+                print(f"⚠️ Không thể khôi phục working directory: {e}")
             
             print(f"\n📊 Mã trả về: {result.returncode}")
             
