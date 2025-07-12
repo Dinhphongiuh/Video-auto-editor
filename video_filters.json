@@ -1,0 +1,46 @@
+{
+  "presets": {
+    "vintage": {
+      "name": "Vintage",
+      "description": "Hiệu ứng cổ điển",
+      "brightness": -0.1,
+      "contrast": 1.15,
+      "saturation": 0.8
+    },
+    "cinematic": {
+      "name": "Cinematic",
+      "description": "Hiệu ứng điện ảnh",
+      "brightness": 0.05,
+      "contrast": 1.25,
+      "saturation": 1.1
+    },
+    "vibrant": {
+      "name": "Vibrant",
+      "description": "Màu sắc sống động",
+      "brightness": 0.1,
+      "contrast": 1.2,
+      "saturation": 1.3
+    },
+    "black_white": {
+      "name": "Black & White",
+      "description": "Đen trắng",
+      "brightness": 0.0,
+      "contrast": 1.2,
+      "saturation": 0.0
+    },
+    "warm": {
+      "name": "Warm",
+      "description": "Tông màu ấm",
+      "brightness": 0.05,
+      "contrast": 1.1,
+      "saturation": 1.15
+    },
+    "cool": {
+      "name": "Cool",
+      "description": "Tông màu lạnh",
+      "brightness": 0.0,
+      "contrast": 1.15,
+      "saturation": 1.1
+    }
+  }
+}
