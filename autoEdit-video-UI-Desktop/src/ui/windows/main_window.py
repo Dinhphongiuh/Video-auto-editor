@@ -1,374 +1,574 @@
 """
-Main Window - Hello World Version
-Primary application window with basic layout
+Main Window - VideoMaster Dashboard Design
+Professional video processing interface with embedded widgets
 """
 
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
-    QLabel, QPushButton, QTextEdit, QFrame,
-    QMenuBar, QStatusBar, QSplitter
+    QLabel, QPushButton, QFrame, QSplitter, QScrollArea,
+    QProgressBar, QComboBox, QSlider, QLineEdit, QTextEdit,
+    QFileDialog, QGridLayout
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QIcon, QPixmap
+from PyQt6.QtCore import Qt, pyqtSignal, QMimeData
+from PyQt6.QtGui import QFont, QDragEnterEvent, QDropEvent, QPainter, QPen
+
+# Import widgets - using relative import
+from ..widgets.file_drop_widget import FileDropWidget
+from ..widgets.folder_selector_widget import FolderSelectorWidget
+
+
+class NavigationWidget(QFrame):
+    """Sidebar navigation widget"""
+    
+    page_changed = pyqtSignal(str)
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.current_page = "dashboard"
+        self.nav_buttons = {}
+        self.setup_ui()
+        
+    def setup_ui(self):
+        """Setup navigation UI"""
+        self.setFixedWidth(200)
+        self.setObjectName("sidebar")
+        
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        
+        # Header section
+        header = self.create_header()
+        layout.addWidget(header)
+        
+        # Navigation menu
+        self.create_navigation_menu(layout)
+        
+        layout.addStretch()
+        
+        # Tools section
+        self.create_tools_section(layout)
+        
+    def create_header(self):
+        """Create header section"""
+        header = QWidget()
+        header.setFixedHeight(70)
+        header.setObjectName("header")
+        
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(20, 15, 20, 15)
+        
+        logo = QLabel("📹")
+        logo.setStyleSheet("font-size: 24px;")
+        header_layout.addWidget(logo)
+        
+        title_layout = QVBoxLayout()
+        title_layout.setSpacing(0)
+        
+        title = QLabel("VideoMaster")
+        title.setStyleSheet("color: #FFFFFF; font-size: 16px; font-weight: bold;")
+        title_layout.addWidget(title)
+        
+        subtitle = QLabel("Pro Editor v2.1")
+        subtitle.setStyleSheet("color: #90A4AE; font-size: 11px;")
+        title_layout.addWidget(subtitle)
+        
+        header_layout.addLayout(title_layout)
+        header_layout.addStretch()
+        
+        status = QLabel("● Ready")
+        status.setStyleSheet("color: #4CAF50; font-size: 11px; font-weight: bold;")
+        header_layout.addWidget(status)
+        
+        return header
+        
+    def create_navigation_menu(self, parent_layout):
+        """Create main navigation menu"""
+        nav_items = [
+            ("🏠", "Dashboard", "dashboard"),
+            ("🔄", "Format Converter", "format"),
+            ("⚡", "Speed Control", "speed"),
+            ("🗜️", "Compression", "compression"),
+            ("📐", "Resolution", "resolution"),
+            ("📁", "Batch Process", "batch")
+        ]
+        
+        for icon, text, page_id in nav_items:
+            btn = self.create_nav_button(icon, text, page_id)
+            self.nav_buttons[page_id] = btn
+            parent_layout.addWidget(btn)
+            
+    def create_tools_section(self, parent_layout):
+        """Create tools section"""
+        tools_label = QLabel("Tools")
+        tools_label.setStyleSheet("color: #78909C; font-size: 11px; font-weight: bold; padding: 15px 20px 10px 20px;")
+        parent_layout.addWidget(tools_label)
+        
+        settings_btn = self.create_nav_button("⚙️", "Settings", "settings")
+        help_btn = self.create_nav_button("❓", "Help", "help")
+        
+        self.nav_buttons["settings"] = settings_btn
+        self.nav_buttons["help"] = help_btn
+        
+        parent_layout.addWidget(settings_btn)
+        parent_layout.addWidget(help_btn)
+        
+    def create_nav_button(self, icon, text, page_id):
+        """Create navigation button"""
+        btn = QPushButton()
+        btn.setFixedHeight(45)
+        btn.setObjectName("nav_button")
+        
+        btn_layout = QHBoxLayout(btn)
+        btn_layout.setContentsMargins(20, 0, 20, 0)
+        
+        icon_label = QLabel(icon)
+        icon_label.setFixedWidth(20)
+        icon_label.setStyleSheet("font-size: 16px;")
+        btn_layout.addWidget(icon_label)
+        
+        text_label = QLabel(text)
+        text_label.setStyleSheet("color: #ECEFF1; font-size: 13px; font-weight: 500;")
+        btn_layout.addWidget(text_label)
+        btn_layout.addStretch()
+        
+        if page_id == "dashboard":
+            btn.setProperty("active", "true")
+            
+        btn.clicked.connect(lambda: self.switch_page(page_id))
+        return btn
+        
+    def switch_page(self, page_id):
+        """Switch page"""
+        self.set_active_page(page_id)
+        self.page_changed.emit(page_id)
+        
+    def set_active_page(self, page_id):
+        """Set active page"""
+        for btn in self.nav_buttons.values():
+            btn.setProperty("active", "false")
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+            
+        if page_id in self.nav_buttons:
+            self.nav_buttons[page_id].setProperty("active", "true")
+            self.nav_buttons[page_id].style().unpolish(self.nav_buttons[page_id])
+            self.nav_buttons[page_id].style().polish(self.nav_buttons[page_id])
+            
+        self.current_page = page_id
 
 
 class MainWindow(QMainWindow):
-    """Main application window class"""
-    
-    # Signals
-    file_selected = pyqtSignal(str)
-    processing_started = pyqtSignal()
+    """Main application window"""
     
     def __init__(self, parent=None):
-        """Initialize main window"""
         super().__init__(parent)
-        self.setWindowTitle("AutoEdit Video UI Desktop - Hello World")
-        self.setGeometry(100, 100, 1200, 800)
-        self.setMinimumSize(800, 600)
-        
-        # Setup UI
+        self.setWindowTitle("VideoMaster - Pro Editor v2.1")
+        self.setGeometry(100, 100, 1400, 900)
+        self.setMinimumSize(1200, 800)
+        self.current_page = "dashboard"
         self.setup_ui()
-        self.setup_menu()
-        self.setup_statusbar()
         self.apply_styles()
         
     def setup_ui(self):
-        """Setup user interface"""
-        # Central widget
+        """Setup the main UI"""
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         
-        # Main layout
         main_layout = QHBoxLayout(central_widget)
-        main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(10)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
         
-        # Create splitter for resizable panels
-        splitter = QSplitter(Qt.Orientation.Horizontal)
-        main_layout.addWidget(splitter)
+        # Left sidebar
+        self.navigation = NavigationWidget()
+        self.navigation.page_changed.connect(self.switch_page)
+        main_layout.addWidget(self.navigation)
         
-        # Left panel (Sidebar)
-        left_panel = self.create_left_panel()
-        splitter.addWidget(left_panel)
+        # Main content area
+        self.content_area = self.create_content_area()
+        main_layout.addWidget(self.content_area)
         
-        # Right panel (Main content)
-        right_panel = self.create_right_panel()
-        splitter.addWidget(right_panel)
+    def create_content_area(self):
+        """Create main content area"""
+        content = QFrame()
+        content.setObjectName("content")
         
-        # Set splitter proportions
-        splitter.setSizes([300, 900])
-        splitter.setStretchFactor(0, 0)  # Left panel fixed
-        splitter.setStretchFactor(1, 1)  # Right panel stretches
+        layout = QVBoxLayout(content)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
         
-    def create_left_panel(self):
-        """Create left sidebar panel"""
-        panel = QFrame()
-        panel.setFrameStyle(QFrame.Shape.StyledPanel)
-        panel.setMinimumWidth(250)
-        panel.setMaximumWidth(400)
+        # Top bar
+        top_bar = self.create_top_bar()
+        layout.addWidget(top_bar)
         
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(15, 15, 15, 15)
-        layout.setSpacing(15)
+        # Scrollable content area
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+        scroll_area.setStyleSheet("QScrollArea { background-color: #263238; border: none; }")
         
-        # Title
-        title = QLabel("🎬 AutoEdit Video UI")
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("""
-            QLabel {
-                font-size: 18px;
-                font-weight: bold;
-                color: #2196F3;
-                padding: 10px;
-                background-color: #F0F8FF;
-                border-radius: 8px;
-                border: 2px solid #E3F2FD;
-            }
-        """)
+        # Main content
+        self.main_content = self.create_dashboard_content()
+        scroll_area.setWidget(self.main_content)
+        layout.addWidget(scroll_area)
+        
+        return content
+        
+    def create_top_bar(self):
+        """Create top navigation bar"""
+        top_bar = QFrame()
+        top_bar.setFixedHeight(60)
+        top_bar.setObjectName("top_bar")
+        
+        layout = QHBoxLayout(top_bar)
+        layout.setContentsMargins(30, 0, 30, 0)
+        
+        title = QLabel("Video Processing Controller")
+        title.setStyleSheet("color: #ECEFF1; font-size: 18px; font-weight: 600;")
         layout.addWidget(title)
         
-        # Features list
-        features_label = QLabel("✨ Features:")
-        features_label.setStyleSheet("font-weight: bold; font-size: 14px; color: #333;")
-        layout.addWidget(features_label)
-        
-        features = [
-            "📁 File Management",
-            "🎥 Video Preview", 
-            "🎨 Filter System",
-            "⚡ Fast Processing",
-            "📤 Multiple Export Formats",
-            "🔄 Batch Operations"
-        ]
-        
-        for feature in features:
-            feature_label = QLabel(feature)
-            feature_label.setStyleSheet("""
-                QLabel {
-                    padding: 8px;
-                    background-color: #FAFAFA;
-                    border-radius: 4px;
-                    border-left: 3px solid #2196F3;
-                }
-            """)
-            layout.addWidget(feature_label)
-        
         layout.addStretch()
         
-        # Action buttons
-        self.load_button = QPushButton("📂 Load Videos")
-        self.load_button.setStyleSheet(self.get_button_style("primary"))
-        self.load_button.clicked.connect(self.on_load_clicked)
-        layout.addWidget(self.load_button)
+        status = QLabel("● Ready")
+        status.setStyleSheet("color: #4CAF50; font-size: 13px; font-weight: bold;")
+        layout.addWidget(status)
         
-        self.process_button = QPushButton("⚡ Start Processing")
-        self.process_button.setStyleSheet(self.get_button_style("secondary"))
-        self.process_button.clicked.connect(self.on_process_clicked)
-        layout.addWidget(self.process_button)
+        return top_bar
         
-        return panel
-        
-    def create_right_panel(self):
-        """Create right main content panel"""
-        panel = QFrame()
-        panel.setFrameStyle(QFrame.Shape.StyledPanel)
-        
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(20, 20, 20, 20)
+    def create_dashboard_content(self):
+        """Create dashboard main content"""
+        content = QWidget()
+        layout = QVBoxLayout(content)
+        layout.setContentsMargins(30, 30, 30, 30)
         layout.setSpacing(20)
         
-        # Welcome header
-        welcome_header = QLabel("🎉 Welcome to AutoEdit Video UI Desktop!")
-        welcome_header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        welcome_header.setStyleSheet("""
-            QLabel {
-                font-size: 24px;
-                font-weight: bold;
-                color: #1976D2;
-                padding: 20px;
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #E3F2FD, stop:1 #BBDEFB);
-                border-radius: 12px;
-                border: 1px solid #90CAF9;
-            }
-        """)
-        layout.addWidget(welcome_header)
+        # File drop area
+        self.file_drop = FileDropWidget()
+        self.file_drop.setFixedHeight(200)
+        layout.addWidget(self.file_drop)
         
-        # Description
-        description = QLabel("""
-        <div style='text-align: center; line-height: 1.6;'>
-            <h3 style='color: #333; margin-bottom: 15px;'>Professional Video Processing Made Simple</h3>
-            <p style='color: #666; font-size: 14px;'>
-                This is the <strong>Hello World</strong> version of AutoEdit Video UI Desktop.<br>
-                A modern, user-friendly interface for the VideoForge video processing engine.
-            </p>
-            <br>
-            <p style='color: #2196F3; font-weight: bold;'>
-                🚀 Ready to transform your video editing workflow!
-            </p>
-        </div>
-        """)
-        description.setWordWrap(True)
-        description.setStyleSheet("""
-            QLabel {
-                background-color: #FAFAFA;
-                padding: 20px;
-                border-radius: 8px;
-                border: 1px solid #E0E0E0;
-            }
-        """)
-        layout.addWidget(description)
+        # Folder selectors
+        self.folder_selector = FolderSelectorWidget()
+        self.folder_selector.setMaximumHeight(120)
+        layout.addWidget(self.folder_selector)
         
-        # Status text area
-        self.status_text = QTextEdit()
-        self.status_text.setReadOnly(True)
-        self.status_text.setMaximumHeight(200)
-        self.status_text.setStyleSheet("""
-            QTextEdit {
-                background-color: #F8F9FA;
-                border: 1px solid #DEE2E6;
-                border-radius: 6px;
-                padding: 10px;
-                font-family: 'Consolas', 'Monaco', monospace;
-                font-size: 12px;
-            }
-        """)
+        # Processing sections - Using Grid Layout for better organization
+        grid_layout = QGridLayout()
+        grid_layout.setSpacing(20)
         
-        # Add initial status message
-        self.status_text.append("✅ AutoEdit Video UI Desktop initialized successfully!")
-        self.status_text.append("🔗 Ready to connect to VideoForge backend...")
-        self.status_text.append("📁 Click 'Load Videos' to get started!")
+        # First row
+        format_section = self.create_format_section()
+        format_section.setMinimumHeight(200)
+        grid_layout.addWidget(format_section, 0, 0)
         
-        layout.addWidget(QLabel("📊 Status Log:"))
-        layout.addWidget(self.status_text)
+        speed_section = self.create_speed_section()
+        speed_section.setMinimumHeight(200)
+        grid_layout.addWidget(speed_section, 0, 1)
+        
+        # Second row
+        compression_section = self.create_compression_section()
+        compression_section.setMinimumHeight(200)
+        grid_layout.addWidget(compression_section, 1, 0)
+        
+        resolution_section = self.create_resolution_section()
+        resolution_section.setMinimumHeight(200)
+        grid_layout.addWidget(resolution_section, 1, 1)
+        
+        layout.addLayout(grid_layout)
+        
+        # Processing progress section
+        progress_section = self.create_progress_section()
+        layout.addWidget(progress_section)
+        
+        # Add stretch at the end to push content up
+        layout.addStretch()
+        
+        return content
+        
+    def create_format_section(self):
+        """Create format conversion section"""
+        section = QFrame()
+        section.setObjectName("section")
+        
+        layout = QVBoxLayout(section)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(12)
+        
+        header = QLabel("🔄 Format Conversion")
+        header.setStyleSheet("color: #64B5F6; font-size: 16px; font-weight: bold;")
+        layout.addWidget(header)
+        
+        format_label = QLabel("Output Format")
+        format_label.setStyleSheet("color: #ECEFF1; font-size: 13px; font-weight: 500;")
+        layout.addWidget(format_label)
+        
+        self.format_combo = QComboBox()
+        self.format_combo.addItems(["MP4", "AVI", "MOV", "MKV", "WMV"])
+        self.format_combo.setFixedHeight(35)
+        layout.addWidget(self.format_combo)
+        
+        params_label = QLabel("Custom Parameters")
+        params_label.setStyleSheet("color: #ECEFF1; font-size: 13px; font-weight: 500;")
+        layout.addWidget(params_label)
+        
+        self.params_input = QLineEdit()
+        self.params_input.setPlaceholderText("--format mp4 --codec h264")
+        self.params_input.setFixedHeight(35)
+        layout.addWidget(self.params_input)
         
         layout.addStretch()
         
-        return panel
-    
+        return section
+        
+    def create_speed_section(self):
+        """Create speed adjustment section"""
+        section = QFrame()
+        section.setObjectName("section")
+        
+        layout = QVBoxLayout(section)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(12)
+        
+        header = QLabel("✅ Speed Adjustment")
+        header.setStyleSheet("color: #4CAF50; font-size: 16px; font-weight: bold;")
+        layout.addWidget(header)
+        
+        speed_label = QLabel("Speed Multiplier")
+        speed_label.setStyleSheet("color: #ECEFF1; font-size: 13px; font-weight: 500;")
+        layout.addWidget(speed_label)
+        
+        slider_layout = QHBoxLayout()
+        self.speed_slider = QSlider(Qt.Orientation.Horizontal)
+        self.speed_slider.setMinimum(25)
+        self.speed_slider.setMaximum(400)
+        self.speed_slider.setValue(100)
+        self.speed_slider.setFixedHeight(25)
+        slider_layout.addWidget(self.speed_slider)
+        
+        self.speed_value = QLabel("1x")
+        self.speed_value.setFixedWidth(40)
+        self.speed_value.setStyleSheet("color: #ECEFF1; font-weight: bold;")
+        slider_layout.addWidget(self.speed_value)
+        
+        layout.addLayout(slider_layout)
+        
+        quick_layout = QHBoxLayout()
+        quick_layout.setSpacing(10)
+        for speed, label in [(50, "0.5x"), (100, "1x"), (200, "2x"), (400, "4x")]:
+            btn = QPushButton(label)
+            btn.setFixedSize(50, 30)
+            btn.setObjectName("quick_button")
+            quick_layout.addWidget(btn)
+        quick_layout.addStretch()
+        layout.addLayout(quick_layout)
+        
+        layout.addStretch()
+        
+        return section
+        
+    def create_compression_section(self):
+        """Create compression section"""
+        section = QFrame()
+        section.setObjectName("section")
+        
+        layout = QVBoxLayout(section)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(12)
+        
+        header = QLabel("✨ Video Compression")
+        header.setStyleSheet("color: #9C27B0; font-size: 16px; font-weight: bold;")
+        layout.addWidget(header)
+        
+        quality_label = QLabel("Quality Level")
+        quality_label.setStyleSheet("color: #ECEFF1; font-size: 13px; font-weight: 500;")
+        layout.addWidget(quality_label)
+        
+        self.quality_combo = QComboBox()
+        self.quality_combo.addItems([
+            "High Quality (Low Compression)",
+            "Medium Quality",
+            "Low Quality (High Compression)",
+            "Custom"
+        ])
+        self.quality_combo.setFixedHeight(35)
+        layout.addWidget(self.quality_combo)
+        
+        size_label = QLabel("Target Size (MB)")
+        size_label.setStyleSheet("color: #ECEFF1; font-size: 13px; font-weight: 500;")
+        layout.addWidget(size_label)
+        
+        self.size_input = QLineEdit()
+        self.size_input.setPlaceholderText("Enter target size")
+        self.size_input.setFixedHeight(35)
+        layout.addWidget(self.size_input)
+        
+        layout.addStretch()
+        
+        return section
+        
+    def create_resolution_section(self):
+        """Create resolution section"""
+        section = QFrame()
+        section.setObjectName("section")
+        
+        layout = QVBoxLayout(section)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(12)
+        
+        header = QLabel("🔧 Resolution Control")
+        header.setStyleSheet("color: #FF9800; font-size: 16px; font-weight: bold;")
+        layout.addWidget(header)
+        
+        res_label = QLabel("Output Resolution")
+        res_label.setStyleSheet("color: #ECEFF1; font-size: 13px; font-weight: 500;")
+        layout.addWidget(res_label)
+        
+        self.resolution_combo = QComboBox()
+        self.resolution_combo.addItems([
+            "4K (3840x2160)",
+            "1440p (2560x1440)", 
+            "1080p (1920x1080)",
+            "720p (1280x720)",
+            "480p (854x480)",
+            "Custom"
+        ])
+        self.resolution_combo.setFixedHeight(35)
+        layout.addWidget(self.resolution_combo)
+        
+        custom_layout = QHBoxLayout()
+        custom_layout.setSpacing(10)
+        
+        self.width_input = QLineEdit()
+        self.width_input.setPlaceholderText("Width")
+        self.width_input.setFixedHeight(35)
+        custom_layout.addWidget(self.width_input)
+        
+        self.height_input = QLineEdit()
+        self.height_input.setPlaceholderText("Height")
+        self.height_input.setFixedHeight(35)
+        custom_layout.addWidget(self.height_input)
+        
+        layout.addLayout(custom_layout)
+        
+        layout.addStretch()
+        
+        return section
+        
+    def create_progress_section(self):
+        """Create processing progress section"""
+        section = QFrame()
+        section.setObjectName("section")
+        section.setFixedHeight(160)
+        
+        layout = QVBoxLayout(section)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(12)
+        
+        header_layout = QHBoxLayout()
+        header = QLabel("Processing Progress")
+        header.setStyleSheet("color: #ECEFF1; font-size: 16px; font-weight: bold;")
+        header_layout.addWidget(header)
+        
+        header_layout.addStretch()
+        
+        time_label = QLabel("🕒 Estimated: 2m 34s")
+        time_label.setStyleSheet("color: #64B5F6; font-size: 13px; font-weight: bold;")
+        header_layout.addWidget(time_label)
+        
+        layout.addLayout(header_layout)
+        
+        file_label = QLabel("Converting video_sample.mp4")
+        file_label.setStyleSheet("color: #B0BEC5; font-size: 13px;")
+        layout.addWidget(file_label)
+        
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setValue(65)
+        self.progress_bar.setFixedHeight(25)
+        layout.addWidget(self.progress_bar)
+        
+        details_layout = QHBoxLayout()
+        speed_label = QLabel("Speed: 1.2x realtime")
+        speed_label.setStyleSheet("color: #90A4AE; font-size: 12px;")
+        details_layout.addWidget(speed_label)
+        
+        details_layout.addStretch()
+        
+        size_label = QLabel("Size: 45.2MB / 68.7MB")
+        size_label.setStyleSheet("color: #90A4AE; font-size: 12px;")
+        details_layout.addWidget(size_label)
+        
+        layout.addLayout(details_layout)
+        
+        buttons_layout = QHBoxLayout()
+        buttons_layout.setSpacing(10)
+        
+        start_btn = QPushButton("▶ Start Processing")
+        start_btn.setObjectName("start_button")
+        start_btn.setFixedHeight(35)
+        buttons_layout.addWidget(start_btn)
+        
+        pause_btn = QPushButton("⏸ Pause")
+        pause_btn.setObjectName("pause_button")
+        pause_btn.setFixedHeight(35)
+        buttons_layout.addWidget(pause_btn)
+        
+        stop_btn = QPushButton("⏹ Stop")
+        stop_btn.setObjectName("stop_button")
+        stop_btn.setFixedHeight(35)
+        buttons_layout.addWidget(stop_btn)
+        
+        export_btn = QPushButton("💾 Export")
+        export_btn.setObjectName("export_button")
+        export_btn.setFixedHeight(35)
+        buttons_layout.addWidget(export_btn)
+        
+        layout.addLayout(buttons_layout)
+        return section
+        
+    def switch_page(self, page_id):
+        """Switch to different page"""
+        self.current_page = page_id
+        print(f"Switching to page: {page_id}")
+        self.navigation.set_active_page(page_id)
+        
+    def apply_styles(self):
+        """Apply custom styles"""
+        self.setStyleSheet("""
+            QMainWindow { background-color: #263238; }
+            QFrame#sidebar { background-color: #37474F; border-right: 1px solid #455A64; }
+            QWidget#header { background-color: #455A64; border-bottom: 1px solid #546E7A; }
+            QFrame#content { background-color: #263238; }
+            QFrame#top_bar { background-color: #37474F; border-bottom: 1px solid #455A64; }
+            QPushButton#nav_button { background-color: transparent; border: none; text-align: left; color: #ECEFF1; }
+            QPushButton#nav_button:hover { background-color: #455A64; }
+            QPushButton#nav_button[active="true"] { background-color: #1976D2; color: #FFFFFF; }
+            QFrame#section { background-color: #37474F; border: 1px solid #455A64; border-radius: 8px; }
+            QComboBox { background-color: #455A64; border: 1px solid #546E7A; border-radius: 4px; padding: 8px 12px; color: #ECEFF1; font-size: 13px; }
+            QComboBox:hover { border-color: #607D8B; }
+            QComboBox::drop-down { border: none; width: 20px; }
+            QComboBox::down-arrow { width: 0px; height: 0px; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 6px solid #B0BEC5; }
+            QLineEdit { background-color: #455A64; border: 1px solid #546E7A; border-radius: 4px; padding: 8px 12px; color: #ECEFF1; font-size: 13px; }
+            QLineEdit:focus { border-color: #2196F3; }
+            QSlider::groove:horizontal { border: 1px solid #546E7A; height: 6px; background: #455A64; border-radius: 3px; }
+            QSlider::handle:horizontal { background: #2196F3; border: 2px solid #1976D2; width: 16px; margin: -6px 0; border-radius: 8px; }
+            QPushButton#quick_button { background-color: #546E7A; color: #ECEFF1; border: none; border-radius: 3px; font-size: 11px; }
+            QPushButton#quick_button:hover { background-color: #607D8B; }
+            QProgressBar { border: 1px solid #546E7A; border-radius: 4px; background-color: #455A64; text-align: center; color: #ECEFF1; font-weight: bold; }
+            QProgressBar::chunk { background-color: #2196F3; border-radius: 3px; }
+            QPushButton#start_button { background-color: #2196F3; color: white; border: none; border-radius: 6px; padding: 10px 20px; font-size: 13px; font-weight: bold; }
+            QPushButton#start_button:hover { background-color: #1976D2; }
+            QPushButton#pause_button { background-color: #FF9800; color: white; border: none; border-radius: 6px; padding: 10px 20px; font-size: 13px; font-weight: bold; }
+            QPushButton#pause_button:hover { background-color: #F57C00; }
+            QPushButton#stop_button { background-color: #F44336; color: white; border: none; border-radius: 6px; padding: 10px 20px; font-size: 13px; font-weight: bold; }
+            QPushButton#stop_button:hover { background-color: #D32F2F; }
+            QPushButton#export_button { background-color: #4CAF50; color: white; border: none; border-radius: 6px; padding: 10px 20px; font-size: 13px; font-weight: bold; }
+            QPushButton#export_button:hover { background-color: #388E3C; }
+        """)
+        
     def setup_menu(self):
         """Setup menu bar"""
-        menubar = self.menuBar()
-        
-        # File menu
-        file_menu = menubar.addMenu('&File')
-        
-        open_action = file_menu.addAction('&Open Videos...')
-        open_action.setShortcut('Ctrl+O')
-        open_action.triggered.connect(self.on_load_clicked)
-        
-        file_menu.addSeparator()
-        
-        settings_action = file_menu.addAction('&Settings...')
-        settings_action.setShortcut('Ctrl+,')
-        settings_action.triggered.connect(self.on_settings_clicked)
-        
-        file_menu.addSeparator()
-        
-        exit_action = file_menu.addAction('E&xit')
-        exit_action.setShortcut('Ctrl+Q')
-        exit_action.triggered.connect(self.close)
-        
-        # Edit menu
-        edit_menu = menubar.addMenu('&Edit')
-        
-        prefs_action = edit_menu.addAction('&Preferences...')
-        prefs_action.triggered.connect(self.on_settings_clicked)
-        
-        # View menu
-        view_menu = menubar.addMenu('&View')
-        
-        refresh_action = view_menu.addAction('&Refresh')
-        refresh_action.setShortcut('F5')
-        refresh_action.triggered.connect(self.on_refresh_clicked)
-        
-        fullscreen_action = view_menu.addAction('&Full Screen')
-        fullscreen_action.setShortcut('F11')
-        fullscreen_action.triggered.connect(self.toggle_fullscreen)
-        
-        # Help menu
-        help_menu = menubar.addMenu('&Help')
-        
-        about_action = help_menu.addAction('&About...')
-        about_action.triggered.connect(self.on_about_clicked)
-        
-        docs_action = help_menu.addAction('&Documentation')
-        docs_action.triggered.connect(self.on_docs_clicked)
+        pass
         
     def setup_statusbar(self):
         """Setup status bar"""
-        self.statusBar().showMessage("Ready - AutoEdit Video UI Desktop v1.0.0")
-        
-    def apply_styles(self):
-        """Apply custom styles to the window"""
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #F5F5F5;
-            }
-            QFrame {
-                background-color: #FFFFFF;
-                border-radius: 8px;
-            }
-            QMenuBar {
-                background-color: #FFFFFF;
-                border-bottom: 1px solid #E0E0E0;
-                padding: 4px;
-            }
-            QMenuBar::item {
-                background-color: transparent;
-                padding: 8px 12px;
-                border-radius: 4px;
-            }
-            QMenuBar::item:selected {
-                background-color: #E3F2FD;
-                color: #1976D2;
-            }
-            QStatusBar {
-                background-color: #FFFFFF;
-                border-top: 1px solid #E0E0E0;
-                padding: 4px;
-            }
-        """)
-    
-    def get_button_style(self, button_type="primary"):
-        """Get button style based on type"""
-        if button_type == "primary":
-            return """
-                QPushButton {
-                    background-color: #2196F3;
-                    color: white;
-                    border: none;
-                    border-radius: 6px;
-                    padding: 12px 20px;
-                    font-weight: bold;
-                    font-size: 14px;
-                }
-                QPushButton:hover {
-                    background-color: #1976D2;
-                }
-                QPushButton:pressed {
-                    background-color: #1565C0;
-                }
-            """
-        else:  # secondary
-            return """
-                QPushButton {
-                    background-color: #4CAF50;
-                    color: white;
-                    border: none;
-                    border-radius: 6px;
-                    padding: 12px 20px;
-                    font-weight: bold;
-                    font-size: 14px;
-                }
-                QPushButton:hover {
-                    background-color: #45A049;
-                }
-                QPushButton:pressed {
-                    background-color: #3D8B40;
-                }
-            """
-    
-    # Event handlers
-    def on_load_clicked(self):
-        """Handle load videos button click"""
-        self.status_text.append("🔍 Load Videos clicked - Feature coming soon!")
-        self.statusBar().showMessage("Load Videos feature will be implemented next...")
-        self.file_selected.emit("demo_file.mp4")
-        
-    def on_process_clicked(self):
-        """Handle process button click"""
-        self.status_text.append("⚡ Start Processing clicked - Feature coming soon!")
-        self.statusBar().showMessage("Processing feature will be implemented next...")
-        self.processing_started.emit()
-        
-    def on_settings_clicked(self):
-        """Handle settings menu click"""
-        self.status_text.append("⚙️ Settings clicked - Feature coming soon!")
-        
-    def on_refresh_clicked(self):
-        """Handle refresh menu click"""
-        self.status_text.append("🔄 Refresh clicked!")
-        self.statusBar().showMessage("Interface refreshed")
-        
-    def toggle_fullscreen(self):
-        """Toggle fullscreen mode"""
-        if self.isFullScreen():
-            self.showNormal()
-            self.status_text.append("🪟 Exited fullscreen mode")
-        else:
-            self.showFullScreen()
-            self.status_text.append("🖥️ Entered fullscreen mode")
-            
-    def on_about_clicked(self):
-        """Handle about menu click"""
-        self.status_text.append("ℹ️ About clicked - Feature coming soon!")
-        
-    def on_docs_clicked(self):
-        """Handle documentation menu click"""
-        self.status_text.append("📖 Documentation clicked - Feature coming soon!")
-        
-    def closeEvent(self, event):
-        """Handle window close event"""
-        self.status_text.append("👋 Closing AutoEdit Video UI Desktop...")
-        event.accept()
+        pass
