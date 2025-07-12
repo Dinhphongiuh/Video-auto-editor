@@ -96,7 +96,7 @@ VideoForge/
 ## 📷 UI Preview
 Here’s a preview of the planned desktop UI design for VideoForge, inspired by a similar video processing tool:
 
-![VideoForge UI Preview](https://via.placeholder.com/800x600.png?text=VideoForge+UI+Preview)  
+![VideoForge UI Preview](https://ibb.co/wZyHtc8P)  
 *(Replace with the actual URL of the uploaded image on GitHub)*
 
 - **Features**: Includes tabs for Format Conversion, Speed Adjustment, Video Compression, and Resolution Control.
