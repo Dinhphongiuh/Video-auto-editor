@@ -14,6 +14,7 @@ from .filter_applier import VideoFilterApplier
 from .system_info import SystemInfoAction
 from .api_service import APIServiceAction
 from .folder_manager import FolderManagerAction
+from .logo_remover import LogoRemoverAction
 
 __all__ = [
     'BaseAction',
@@ -22,6 +23,7 @@ __all__ = [
     'VideoSpeedAdjuster',
     'VideoResolutionChanger',
     'VideoFilterApplier',
+    'LogoRemoverAction',  
     'SystemInfoAction',
     'APIServiceAction',
     'FolderManagerAction'
@@ -40,6 +42,7 @@ ACTION_REGISTRY = {
     'resolution_changer': VideoResolutionChanger,
     'filter_applier': VideoFilterApplier,
     'system_info': SystemInfoAction,
+    'logo_remover': LogoRemoverAction, 
     'api_service': APIServiceAction,
     'folder_manager': FolderManagerAction
 }

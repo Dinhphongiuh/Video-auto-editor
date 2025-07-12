@@ -18,6 +18,7 @@ from actions.filter_applier import VideoFilterApplier
 from actions.system_info import SystemInfoAction
 from actions.api_service import APIServiceAction
 from actions.folder_manager import FolderManagerAction
+from actions.logo_remover import LogoRemoverAction
 
 
 class VideoForgeController:
@@ -35,7 +36,8 @@ class VideoForgeController:
             "compressor": VideoCompressor(),
             "speed_adjuster": VideoSpeedAdjuster(),
             "resolution_changer": VideoResolutionChanger(),
-            "filter_applier": VideoFilterApplier()
+            "filter_applier": VideoFilterApplier(),
+            "logo_remover": LogoRemoverAction(), 
         }
         
         # Menu mapping
@@ -46,9 +48,10 @@ class VideoForgeController:
             "4": self._resize_videos,
             "5": self._speed_videos,
             "6": self._apply_filters,
-            "7": self._set_folders,
-            "8": self._show_system_info,
-            "9": self._start_api_service,
+            "7": self._remove_logos,
+            "8": self._set_folders,
+            "9": self._show_system_info,
+            "10": self._start_api_service,
             "0": self._exit
         }
     
@@ -77,9 +80,10 @@ class VideoForgeController:
         print("4. 📐 Thay đổi độ phân giải")
         print("5. ⚡ Tăng/giảm tốc độ video")
         print("6. 🎨 Áp dụng bộ lọc video")
-        print("7. ⚙️  Thay đổi thư mục Input/Output")
-        print("8. 📊 Xem thông tin hệ thống")
-        print("9. 🔧 Khởi động dịch vụ API")
+        print("7. 🚫 Tự động xóa logo/watermark") 
+        print("8. ⚙️  Thay đổi thư mục Input/Output")
+        print("9. 📊 Xem thông tin hệ thống")
+        print("10. 🔧 Khởi động dịch vụ API")
         print("0. 🚪 Thoát")
         print("-" * 70)
     
@@ -114,6 +118,11 @@ class VideoForgeController:
         """Áp dụng bộ lọc video"""
         folders = self.folder_manager.get_folders()
         self.actions["filter_applier"].execute(folders['input'], folders['output'])
+
+    def _remove_logos(self):
+        """Tự động xóa logo/watermark"""
+        folders = self.folder_manager.get_folders()
+        self.actions["logo_remover"].execute(folders['input'], folders['output'])
     
     def _set_folders(self):
         """Thiết lập thư mục input và output"""
@@ -146,7 +155,7 @@ class VideoForgeController:
                     if self.menu_actions[choice]():
                         break  # Thoát nếu action trả về True
                 else:
-                    print("❌ Lựa chọn không hợp lệ! Vui lòng chọn từ 0-9.")
+                    print("❌ Lựa chọn không hợp lệ! Vui lòng chọn từ 0-10.")
                     input("Nhấn Enter để tiếp tục...")
                     
             except KeyboardInterrupt:
