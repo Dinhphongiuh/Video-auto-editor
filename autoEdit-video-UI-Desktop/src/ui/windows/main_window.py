@@ -15,6 +15,7 @@ from PyQt6.QtGui import QFont, QDragEnterEvent, QDropEvent, QPainter, QPen
 # Import widgets - using relative import
 from ..widgets.file_drop_widget import FileDropWidget
 from ..widgets.folder_selector_widget import FolderSelectorWidget
+from ..widgets.format_converter_widget import FormatConverterWidget
 
 
 class NavigationWidget(QFrame):
@@ -188,6 +189,9 @@ class MainWindow(QMainWindow):
         self.content_area = self.create_content_area()
         main_layout.addWidget(self.content_area)
         
+        # Connect folder signals after UI is created
+        self.connect_folder_signals()
+        
     def create_content_area(self):
         """Create main content area"""
         content = QFrame()
@@ -287,39 +291,33 @@ class MainWindow(QMainWindow):
         
     def create_format_section(self):
         """Create format conversion section"""
-        section = QFrame()
-        section.setObjectName("section")
-        
-        layout = QVBoxLayout(section)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(12)
-        
-        header = QLabel("🔄 Format Conversion")
-        header.setStyleSheet("color: #64B5F6; font-size: 16px; font-weight: bold;")
-        layout.addWidget(header)
-        
-        format_label = QLabel("Output Format")
-        format_label.setStyleSheet("color: #ECEFF1; font-size: 13px; font-weight: 500;")
-        layout.addWidget(format_label)
-        
-        self.format_combo = QComboBox()
-        self.format_combo.addItems(["MP4", "AVI", "MOV", "MKV", "WMV"])
-        self.format_combo.setFixedHeight(35)
-        layout.addWidget(self.format_combo)
-        
-        params_label = QLabel("Custom Parameters")
-        params_label.setStyleSheet("color: #ECEFF1; font-size: 13px; font-weight: 500;")
-        layout.addWidget(params_label)
-        
-        self.params_input = QLineEdit()
-        self.params_input.setPlaceholderText("--format mp4 --codec h264")
-        self.params_input.setFixedHeight(35)
-        layout.addWidget(self.params_input)
-        
-        layout.addStretch()
-        
-        return section
-        
+        self.format_converter = FormatConverterWidget()
+        return self.format_converter
+
+    def connect_folder_signals(self):
+        """Connect folder selection signals to widgets"""
+        if hasattr(self, 'folder_selector') and hasattr(self, 'format_converter'):
+            # Connect both input and output folder signals
+            self.folder_selector.input_folder_changed.connect(self.on_input_folder_changed)
+            self.folder_selector.output_folder_changed.connect(self.on_output_folder_changed)
+    
+    def on_input_folder_changed(self, input_folder):
+        """Handle input folder change"""
+        if hasattr(self, 'format_converter'):
+            output_folder = self.folder_selector.get_output_folder()
+            self.format_converter.set_folders(input_folder, output_folder)
+
+    def on_output_folder_changed(self, output_folder):
+        """Handle output folder change"""
+        if hasattr(self, 'format_converter'):
+            input_folder = self.folder_selector.get_input_folder()
+            self.format_converter.set_folders(input_folder, output_folder)
+            
+    def update_widget_folders(self, input_folder, output_folder):
+        """Update folders in all widgets"""
+        if hasattr(self, 'format_converter'):
+            self.format_converter.set_folders(input_folder, output_folder)
+  
     def create_speed_section(self):
         """Create speed adjustment section"""
         section = QFrame()
@@ -563,6 +561,18 @@ class MainWindow(QMainWindow):
             QPushButton#stop_button:hover { background-color: #D32F2F; }
             QPushButton#export_button { background-color: #4CAF50; color: white; border: none; border-radius: 6px; padding: 10px 20px; font-size: 13px; font-weight: bold; }
             QPushButton#export_button:hover { background-color: #388E3C; }
+            QPushButton#primary_button { 
+                background-color: #2196F3; 
+                color: white; 
+                border: none; 
+                border-radius: 6px; 
+                padding: 10px 20px; 
+                font-size: 13px; 
+                font-weight: bold; 
+            }
+            QPushButton#primary_button:hover { 
+                background-color: #1976D2; 
+            }
         """)
         
     def setup_menu(self):
