@@ -19,10 +19,13 @@ from actions.system_info import SystemInfoAction
 from actions.api_service import APIServiceAction
 from actions.folder_manager import FolderManagerAction
 from actions.logo_remover import LogoRemoverAction
-
+from actions.voice_changer import VoiceChangerAction
+from actions.youtube_downloader import YouTubeDownloaderAction
+from actions.video_trimmer import VideoTrimmerAction
 
 class VideoForgeController:
     """Controller chính - chỉ chứa logic điều khiển và giao diện"""
+    
     
     def __init__(self):
         self.version = "1.0.0"
@@ -38,6 +41,9 @@ class VideoForgeController:
             "resolution_changer": VideoResolutionChanger(),
             "filter_applier": VideoFilterApplier(),
             "logo_remover": LogoRemoverAction(), 
+            "voice_changer": VoiceChangerAction(),
+            "youtube_downloader": YouTubeDownloaderAction(),
+            "video_trimmer": VideoTrimmerAction(),
         }
         
         # Menu mapping
@@ -49,10 +55,11 @@ class VideoForgeController:
             "5": self._speed_videos,
             "6": self._apply_filters,
             "7": self._remove_logos,
-            "8": self._set_folders,
-            "9": self._show_system_info,
-            "10": self._start_api_service,
-            "0": self._exit
+            "8": self._change_voice,        
+            "9": self._download_youtube,       
+            "10": self._set_folders,         
+            "11": self._show_system_info,    
+            "12": self._start_api_service,   
         }
     
     def clear_screen(self):
@@ -76,14 +83,16 @@ class VideoForgeController:
         print("🎯 CHỌN TÍNH NĂNG:")
         print("1. 📹 Chuyển đổi định dạng video")
         print("2. 🗜️  Nén video")
-        print("3. ✂️  Cắt video (chưa hỗ trợ)")
+        print("3. ✂️  Cắt video")
         print("4. 📐 Thay đổi độ phân giải")
         print("5. ⚡ Tăng/giảm tốc độ video")
         print("6. 🎨 Áp dụng bộ lọc video")
         print("7. 🚫 Tự động xóa logo/watermark") 
-        print("8. ⚙️  Thay đổi thư mục Input/Output")
-        print("9. 📊 Xem thông tin hệ thống")
-        print("10. 🔧 Khởi động dịch vụ API")
+        print("8. 🎤 Thay đổi giọng nói")             
+        print("9. 📺 Download YouTube & Tạo TikTok Content")  
+        print("10. ⚙️  Thay đổi thư mục Input/Output")       
+        print("11. 📊 Xem thông tin hệ thống")                 
+        print("12. 🔧 Khởi động dịch vụ API")                          
         print("0. 🚪 Thoát")
         print("-" * 70)
     
@@ -98,11 +107,9 @@ class VideoForgeController:
         self.actions["compressor"].execute(folders['input'], folders['output'])
     
     def _trim_videos(self):
-        """Cắt video - chưa hỗ trợ"""
-        print("\n⚠️  Chức năng cắt video hiện chưa được hỗ trợ!")
-        print("🔧 Chức năng này đang được phát triển và sẽ có trong phiên bản tiếp theo.")
-        print("\n💡 Mẹo: Bạn có thể sử dụng chức năng Speed để thay đổi tốc độ video.")
-        input("\nNhấn Enter để tiếp tục...")
+        """Cắt video tự động"""
+        folders = self.folder_manager.get_folders()
+        self.actions["video_trimmer"].execute(folders['input'], folders['output'])
     
     def _resize_videos(self):
         """Thay đổi độ phân giải video"""
@@ -119,10 +126,21 @@ class VideoForgeController:
         folders = self.folder_manager.get_folders()
         self.actions["filter_applier"].execute(folders['input'], folders['output'])
 
+    def _change_voice(self):
+        """Thay đổi giọng nói trong video"""
+        folders = self.folder_manager.get_folders()
+        self.actions["voice_changer"].execute(folders['input'], folders['output'])
+
     def _remove_logos(self):
         """Tự động xóa logo/watermark"""
         folders = self.folder_manager.get_folders()
         self.actions["logo_remover"].execute(folders['input'], folders['output'])
+
+    def _download_youtube(self):
+        """Download YouTube video và tạo TikTok content"""
+        folders = self.folder_manager.get_folders()
+        # Sử dụng output folder để lưu video và content
+        self.actions["youtube_downloader"].execute(folders['input'], folders['output'])
     
     def _set_folders(self):
         """Thiết lập thư mục input và output"""
