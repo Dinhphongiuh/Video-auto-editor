@@ -1,46 +1,257 @@
 {
+  "meta": {
+    "version": "1.3.1",
+    "description": "VideoForge Enhanced Filter Presets",
+    "engine": "filter_applier.py",
+    "last_updated": "2025-01-20",
+    "total_presets": 12
+  },
   "presets": {
     "vintage": {
       "name": "Vintage",
-      "description": "Hiệu ứng cổ điển",
+      "description": "Hiệu ứng cổ điển với tông màu ấm",
+      "category": "Classic",
       "brightness": -0.1,
       "contrast": 1.15,
-      "saturation": 0.8
+      "saturation": 0.8,
+      "gamma": 0.9,
+      "sepia": true,
+      "recommended_for": ["photos", "memories", "artistic"]
     },
     "cinematic": {
       "name": "Cinematic",
-      "description": "Hiệu ứng điện ảnh",
+      "description": "Hiệu ứng điện ảnh chuyên nghiệp",
+      "category": "Professional",
       "brightness": 0.05,
       "contrast": 1.25,
-      "saturation": 1.1
+      "saturation": 1.1,
+      "gamma": 1.1,
+      "vignette": true,
+      "recommended_for": ["movies", "trailers", "professional"]
     },
     "vibrant": {
       "name": "Vibrant",
-      "description": "Màu sắc sống động",
+      "description": "Màu sắc sống động và nổi bật",
+      "category": "Social Media",
       "brightness": 0.1,
       "contrast": 1.2,
-      "saturation": 1.3
+      "saturation": 1.3,
+      "gamma": 1.05,
+      "recommended_for": ["social_media", "youtube", "tiktok"]
     },
     "black_white": {
       "name": "Black & White",
-      "description": "Đen trắng",
+      "description": "Đen trắng cổ điển",
+      "category": "Artistic",
       "brightness": 0.0,
       "contrast": 1.2,
-      "saturation": 0.0
+      "saturation": 0.0,
+      "gamma": 1.0,
+      "recommended_for": ["artistic", "documentary", "classic"]
     },
     "warm": {
       "name": "Warm",
-      "description": "Tông màu ấm",
+      "description": "Tông màu ấm áp và dễ chịu",
+      "category": "Mood",
       "brightness": 0.05,
       "contrast": 1.1,
-      "saturation": 1.15
+      "saturation": 1.15,
+      "temperature": 3200,
+      "recommended_for": ["sunset", "indoor", "cozy"]
     },
     "cool": {
       "name": "Cool",
-      "description": "Tông màu lạnh",
+      "description": "Tông màu lạnh mát và hiện đại",
+      "category": "Mood",
       "brightness": 0.0,
       "contrast": 1.15,
-      "saturation": 1.1
+      "saturation": 1.1,
+      "temperature": 6500,
+      "recommended_for": ["tech", "modern", "winter"]
+    },
+    "dramatic": {
+      "name": "Dramatic",
+      "description": "Hiệu ứng kịch tính cao",
+      "category": "Professional",
+      "brightness": -0.05,
+      "contrast": 1.4,
+      "saturation": 1.2,
+      "gamma": 0.85,
+      "sharpen": true,
+      "recommended_for": ["action", "thriller", "intense"]
+    },
+    "soft": {
+      "name": "Soft",
+      "description": "Hiệu ứng mềm mại và nhẹ nhàng",
+      "category": "Portrait",
+      "brightness": 0.1,
+      "contrast": 0.9,
+      "saturation": 1.05,
+      "blur": 0.5,
+      "recommended_for": ["portrait", "beauty", "romantic"]
+    },
+    "neon": {
+      "name": "Neon",
+      "description": "Hiệu ứng neon sống động",
+      "category": "Creative",
+      "brightness": 0.15,
+      "contrast": 1.3,
+      "saturation": 1.4,
+      "gamma": 1.2,
+      "recommended_for": ["gaming", "cyberpunk", "party"]
+    },
+    "matte": {
+      "name": "Matte",
+      "description": "Hiệu ứng matte phim cổ điển",
+      "category": "Cinematic",
+      "brightness": 0.0,
+      "contrast": 0.85,
+      "saturation": 0.9,
+      "gamma": 1.15,
+      "recommended_for": ["film", "vintage", "retro"]
+    },
+    "hdr": {
+      "name": "HDR Enhance",
+      "description": "Nâng cao độ tương phản HDR",
+      "category": "Enhancement",
+      "brightness": 0.05,
+      "contrast": 1.35,
+      "saturation": 1.25,
+      "gamma": 0.95,
+      "sharpen": true,
+      "recommended_for": ["landscape", "nature", "travel"]
+    },
+    "instagram": {
+      "name": "Instagram",
+      "description": "Tối ưu cho Instagram và social media",
+      "category": "Social Media",
+      "brightness": 0.08,
+      "contrast": 1.15,
+      "saturation": 1.2,
+      "gamma": 1.0,
+      "recommended_for": ["instagram", "stories", "reels"]
     }
+  },
+  "categories": {
+    "Classic": {
+      "description": "Các bộ lọc cổ điển và retro",
+      "filters": ["vintage", "black_white", "matte"]
+    },
+    "Professional": {
+      "description": "Bộ lọc chuyên nghiệp cho video production",
+      "filters": ["cinematic", "dramatic"]
+    },
+    "Social Media": {
+      "description": "Tối ưu cho các nền tảng mạng xã hội",
+      "filters": ["vibrant", "instagram"]
+    },
+    "Artistic": {
+      "description": "Hiệu ứng nghệ thuật và sáng tạo",
+      "filters": ["black_white", "neon"]
+    },
+    "Mood": {
+      "description": "Tạo mood và cảm xúc",
+      "filters": ["warm", "cool"]
+    },
+    "Portrait": {
+      "description": "Chuyên dụng cho chân dung và người",
+      "filters": ["soft"]
+    },
+    "Creative": {
+      "description": "Hiệu ứng sáng tạo và độc đáo",
+      "filters": ["neon"]
+    },
+    "Enhancement": {
+      "description": "Nâng cao chất lượng video",
+      "filters": ["hdr"]
+    },
+    "Cinematic": {
+      "description": "Phong cách điện ảnh",
+      "filters": ["cinematic", "matte"]
+    }
+  },
+  "processing_modes": {
+    "fast": {
+      "name": "Fast Processing",
+      "description": "Xử lý nhanh, chất lượng trung bình",
+      "ffmpeg_preset": "fast",
+      "threads": 4,
+      "priority": "speed"
+    },
+    "balanced": {
+      "name": "Balanced Processing", 
+      "description": "Cân bằng tốc độ và chất lượng",
+      "ffmpeg_preset": "medium",
+      "threads": 4,
+      "priority": "balanced"
+    },
+    "quality": {
+      "name": "Quality Processing",
+      "description": "Chất lượng cao, xử lý chậm hơn",
+      "ffmpeg_preset": "slow",
+      "crf": 18,
+      "priority": "quality"
+    },
+    "gpu": {
+      "name": "GPU Accelerated",
+      "description": "Sử dụng GPU acceleration (nếu có)",
+      "hardware_acceleration": "cuda",
+      "encoder": "h264_nvenc",
+      "priority": "speed"
+    }
+  },
+  "advanced_effects": {
+    "sepia": {
+      "ffmpeg_filter": "colorchannelmixer=.393:.769:.189:0:.349:.686:.168:0:.272:.534:.131",
+      "description": "Hiệu ứng sepia cổ điển"
+    },
+    "vignette": {
+      "ffmpeg_filter": "vignette",
+      "description": "Hiệu ứng làm tối góc"
+    },
+    "sharpen": {
+      "ffmpeg_filter": "unsharp=5:5:1.0:5:5:0.0",
+      "description": "Làm nét hình ảnh"
+    },
+    "blur": {
+      "ffmpeg_filter": "boxblur=1:1",
+      "description": "Làm mờ nhẹ"
+    },
+    "temperature_warm": {
+      "ffmpeg_filter": "colorbalance=rs=0.1:gs=0.0:bs=-0.1",
+      "description": "Tăng độ ấm"
+    },
+    "temperature_cool": {
+      "ffmpeg_filter": "colorbalance=rs=-0.1:gs=0.0:bs=0.1", 
+      "description": "Tăng độ lạnh"
+    }
+  },
+  "usage_tips": {
+    "brightness": "Điều chỉnh độ sáng tổng thể (-1.0 = tối nhất, 1.0 = sáng nhất)",
+    "contrast": "Điều chỉnh độ tương phản (0.0 = không tương phản, 3.0 = tương phản cao)",
+    "saturation": "Điều chỉnh độ bão hòa màu (0.0 = đen trắng, 3.0 = màu sắc cực kỳ sống động)",
+    "gamma": "Điều chỉnh gamma correction (ảnh hưởng đến mid-tones)",
+    "temperature": "Nhiệt độ màu (3200K = ấm, 6500K = lạnh)",
+    "recommended_workflow": [
+      "1. Chọn bộ lọc preset phù hợp với nội dung",
+      "2. Xem trước kết quả trên 1 file nhỏ",
+      "3. Điều chỉnh custom nếu cần",
+      "4. Áp dụng cho toàn bộ batch"
+    ]
+  },
+  "compatibility": {
+    "supported_formats": [".mp4", ".avi", ".mov", ".mkv", ".webm", ".flv", ".wmv"],
+    "required_software": ["FFmpeg"],
+    "optional_software": ["CUDA (cho GPU acceleration)"],
+    "minimum_ram": "4GB",
+    "recommended_ram": "8GB+",
+    "cpu_threads": "Tự động detect, khuyến nghị 4+ cores"
+  },
+  "version_history": {
+    "1.0.0": "Initial release với 6 bộ lọc cơ bản",
+    "1.1.0": "Thêm custom filter và GPU support",
+    "1.2.0": "Thêm advanced effects và processing modes", 
+    "1.3.0": "Thêm categories và usage tips",
+    "1.3.1": "Enhanced filter presets và improved performance"
   }
 }
