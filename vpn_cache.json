@@ -1,0 +1,60 @@
+{
+  "tested_ips": {
+    "104.248.59.38:80": {
+      "proxy": "104.248.59.38:80",
+      "ip": "104.248.59.38",
+      "port": 80,
+      "score": 0,
+      "latency": 999999,
+      "tiktok_accessible": false,
+      "speed_mbps": 0,
+      "stability": 0.0,
+      "tested_at": "2025-07-22T21:24:15.158553"
+    },
+    "104.143.224.158:6019": {
+      "proxy": "104.143.224.158:6019",
+      "ip": "104.143.224.158",
+      "port": 6019,
+      "score": 0,
+      "latency": 999999,
+      "tiktok_accessible": false,
+      "speed_mbps": 0,
+      "stability": 0.0,
+      "tested_at": "2025-07-22T21:24:20.642642"
+    },
+    "216.74.115.90:6684": {
+      "proxy": "216.74.115.90:6684",
+      "ip": "216.74.115.90",
+      "port": 6684,
+      "score": 0,
+      "latency": 999999,
+      "tiktok_accessible": false,
+      "speed_mbps": 0,
+      "stability": 0.0,
+      "tested_at": "2025-07-22T21:24:23.002738"
+    },
+    "155.254.38.14:5690": {
+      "proxy": "155.254.38.14:5690",
+      "ip": "155.254.38.14",
+      "port": 5690,
+      "score": 0,
+      "latency": 999999,
+      "tiktok_accessible": false,
+      "speed_mbps": 0,
+      "stability": 0.0,
+      "tested_at": "2025-07-22T21:24:23.034384"
+    },
+    "45.56.175.5:5679": {
+      "proxy": "45.56.175.5:5679",
+      "ip": "45.56.175.5",
+      "port": 5679,
+      "score": 0,
+      "latency": 999999,
+      "tiktok_accessible": false,
+      "speed_mbps": 0,
+      "stability": 0.0,
+      "tested_at": "2025-07-22T21:24:23.033559"
+    }
+  },
+  "last_update": "2025-07-22T21:24:30.694038"
+}

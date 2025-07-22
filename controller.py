@@ -23,13 +23,14 @@ from actions.voice_changer import VoiceChangerAction
 from actions.youtube_downloader import YouTubeDownloaderAction
 from actions.video_trimmer import VideoTrimmerAction
 from actions.combo import ComboProcessorAction
+from actions.vpn_faker import VPNFakerAction
 
 
 class VideoForgeController:
     """Controller chính - Phiên bản cải tiến với filter_applier.py tối ưu"""
 
     def __init__(self):
-        self.version = "1.3.1"  # Tăng version để đánh dấu cải tiến
+        self.version = "1.4.0"  # Tăng version để đánh dấu cải tiến
         self.folder_manager = FolderManagerAction()
         self.system_info = SystemInfoAction()
         self.api_service = APIServiceAction()
@@ -46,6 +47,7 @@ class VideoForgeController:
             "youtube_downloader": YouTubeDownloaderAction(),
             "video_trimmer": VideoTrimmerAction(),
             "combo_processor": ComboProcessorAction(),
+            "vpn_faker": VPNFakerAction(),
         }
 
         # Menu mapping với filter action được cải tiến
@@ -63,7 +65,8 @@ class VideoForgeController:
             "11": self._set_folders,
             "12": self._show_system_info,
             "13": self._start_api_service,
-            "14": self._filter_info,  # ✅ Thêm menu xem thông tin filter
+            "14": self._filter_info,
+            "15": self._use_vpn_faker,
             "0": self._exit,
         }
 
@@ -106,6 +109,7 @@ class VideoForgeController:
         print("    🎬 VIDEO FORGE CONTROLLER v{} 🎬".format(self.version))
         print("    Công cụ xử lý video chuyên nghiệp với Advanced Filters")
         print("    ✨ Powered by filter_applier.py engine ✨")
+        print("    🌐 Now with VPN Faker for TikTok! 🌐")
         print("=" * 75)
         print()
 
@@ -147,6 +151,7 @@ class VideoForgeController:
         print("12. 📊 Xem thông tin hệ thống")
         print("13. 🔧 Khởi động dịch vụ API")
         print("14. ℹ️  Xem thông tin bộ lọc và presets")  # Menu mới
+        print("15. 🌐 VPN Faker - Tự động fake IP Mỹ cho TikTok [NEW]")
         print("0. 🚪 Thoát")
         print("-" * 75)
 
@@ -231,6 +236,11 @@ class VideoForgeController:
         """Combo processing - kết hợp nhiều chức năng"""
         folders = self.folder_manager.get_folders()
         self.actions["combo_processor"].execute(folders["input"], folders["output"])
+
+    def _use_vpn_faker(self):
+        """Sử dụng VPN Faker cho TikTok"""
+        print("\n🌐 KHỞI ĐỘNG VPN FAKER CHO TIKTOK...")
+        self.actions["vpn_faker"].execute()
 
     def _set_folders(self):
         """Thiết lập thư mục input và output"""
@@ -353,6 +363,7 @@ class VideoForgeController:
         """Thoát chương trình"""
         print("\n👋 Cảm ơn bạn đã sử dụng VideoForge!")
         print("🎨 Filter Engine được cung cấp bởi filter_applier.py")
+        print("🌐 VPN Faker powered by vpn_faker.py")
         return True
 
     def run(self):
@@ -375,6 +386,9 @@ class VideoForgeController:
                     if choice == "6":
                         print("🎨 Khởi động Filter Processing với filter_applier.py...")
 
+                    elif choice == "15":
+                        print("🌐 Khởi động VPN Faker cho TikTok...")
+
                     if self.menu_actions[choice]():
                         break  # Thoát nếu action trả về True
 
@@ -392,6 +406,21 @@ class VideoForgeController:
                 print("   - video_filters.json file")
                 print("   - File permissions")
                 input("Nhấn Enter để tiếp tục...")
+
+    def _validate_vpn_faker(self):
+        """Kiểm tra và xác nhận VPN Faker hoạt động đúng"""
+        try:
+            vpn_faker = self.actions.get("vpn_faker")
+            if vpn_faker:
+                print("✅ VPN Faker: Module loaded successfully")
+                # Check cache file
+                if hasattr(vpn_faker, "cache_file"):
+                    if os.path.exists(vpn_faker.cache_file):
+                        print(f"✅ VPN Cache: Found at {vpn_faker.cache_file}")
+            else:
+                print("❌ Cảnh báo: VPN Faker không được khởi tạo đúng")
+        except Exception as e:
+            print(f"⚠️ Lỗi kiểm tra VPN Faker: {e}")
 
     def _check_dependencies(self):
         """Kiểm tra dependencies cơ bản"""
